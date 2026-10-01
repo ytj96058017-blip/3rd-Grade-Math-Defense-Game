@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Defenders 3 : 중3 수학 디펜스</title>
+  <style>
+    :root {
+      --bg: #090e17;
+      --card-bg: #131c2e;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text: #f8fafc;
+      --gold: #facc15;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --border: #22324d;
+      --purple: #a855f7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding: 10px; }
+
+    /* 헤더 한 줄 고정 */
+    header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--card-bg); border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 10px; }
+    .title-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .title-group h1 { font-size: 1.08rem; color: var(--accent); letter-spacing: -0.5px; white-space: nowrap; }
+    .stats-group { display: flex; gap: 10px; font-size: 0.86rem; font-weight: 600; align-items: center; flex-shrink: 0; white-space: nowrap; }
+    .btn { background: var(--accent); color: #04101e; border: none; padding: 6px 11px; font-size: 0.82rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; flex-shrink: 0; }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-secondary:hover { background: #334769; }
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* 포탑 관리 인스펙터 패널 */
+    #tower-inspector-modal { position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.95); border: 2px solid var(--accent); border-radius: 10px; padding: 10px 14px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.8); backdrop-filter: blur(6px); width: 230px; }
+    .insp-title { font-size: 0.88rem; font-weight: bold; color: var(--accent); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .insp-stat { font-size: 0.74rem; color: #cbd5e1; margin: 2px 0; }
+    .insp-btns { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* 메인 캔버스 */
+    #game-container { position: relative; width: 900px; height: 450px; background: #060a12; border-radius: 14px; border: 2px solid var(--border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+    canvas { display: block; cursor: crosshair; }
+
+    /* 대시보드 */
+    #dashboard { width: 100%; max-width: 900px; margin-top: 8px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
+    .panel { background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .panel-header { font-size: 0.92rem; font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; color: var(--accent); align-items: center; }
+
+    /* 퀴즈 박스 */
+    #quiz-box { display: flex; flex-direction: column; gap: 8px; }
+    #question-text { font-size: 0.95rem; font-weight: 600; min-height: 40px; line-height: 1.45; color: #f1f5f9; }
+    .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .choice-btn { background: #1a2538; color: #fff; border: 1px solid #2a3d5e; border-radius: 8px; padding: 9px; font-size: 0.88rem; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.15s; }
+    .choice-btn:hover { background: #263857; border-color: var(--accent); transform: translateY(-1px); }
+
+    /* 포탑 선택 카드 목록 */
+    .tower-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 4px; }
+    .tower-card { background: #0c1424; border: 2px solid var(--border); border-radius: 8px; padding: 6px 8px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 2px; position: relative; }
+    .tower-card.selected { border-color: var(--accent); background: #162642; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+    .tower-card.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.8); }
+    .tower-card.locked:hover { border-color: var(--border); background: #0c1424; }
+    .tower-card .t-lock-badge { position: absolute; right: 6px; top: 6px; font-size: 0.68rem; color: #f87171; font-weight: bold; background: rgba(0,0,0,0.7); padding: 1px 5px; border-radius: 4px; }
+    .tower-card .t-name { font-weight: bold; font-size: 0.82rem; color: #fff; }
+    .tower-card .t-cost { font-size: 0.78rem; color: var(--gold); }
+    .tower-card .t-desc { font-size: 0.7rem; color: #94a3b8; }
+    .action-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; justify-content: flex-end; }
+
+    /* 모달 */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-card { background: var(--card-bg); border: 2px solid var(--border); border-radius: 16px; padding: 22px; width: 92%; max-width: 440px; text-align: center; box-shadow: 0 10px 35px rgba(0,0,0,0.8); }
+    .modal-card h2 { color: var(--accent); margin-bottom: 10px; font-size: 1.25rem; }
+    .form-group { margin-bottom: 10px; text-align: left; }
+    .form-group label { display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: #080d17; color: #fff; font-size: 0.9rem; }
+    .form-group input:focus { outline: none; border-color: var(--accent); }
+
+    .rank-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.8rem; }
+    .rank-table th, .rank-table td { padding: 5px 3px; border-bottom: 1px solid var(--border); text-align: center; }
+    .rank-table th { color: var(--accent); }
+
+    /* 로비 */
+    #stage-select-view { width: 100%; max-width: 900px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin-top: 8px; }
+    .stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 16px; }
+    .stage-card { background: #0a1120; border: 2px solid var(--border); border-radius: 10px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+    .stage-card:hover:not(.locked) { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 6px 16px rgba(56, 189, 248, 0.25); }
+    .stage-card.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.8); }
+
+    /* 토스트 알림 */
+    #toast-msg { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 9px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; border: 1px solid var(--accent); box-shadow: 0 6px 20px rgba(0,0,0,0.6); z-index: 2000; transition: opacity 0.3s; pointer-events: none; }
+
+    /* 몬스터 도감 전용 시각화 스타일 */
+    .guide-tabs { display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .guide-tab-btn { flex: 1; padding: 8px; border-radius: 6px; background: #080d17; border: 1px solid var(--border); color: #94a3b8; font-weight: bold; cursor: pointer; font-size: 0.82rem; transition: all 0.2s; }
+    .guide-tab-btn.active { background: #1e2e4a; color: var(--accent); border-color: var(--accent); }
+    
+    .mon-card { display: flex; align-items: center; gap: 12px; background: #090e18; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 12px; }
+    .mon-preview { width: 50px; height: 50px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; background: #030712; border-radius: 8px; border: 1px solid #1e293b; position: relative; }
+    .mon-info { flex: 1; text-align: left; }
+    .mon-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .mon-name { font-size: 0.86rem; font-weight: bold; color: #f1f5f9; }
+    .mon-wave-badge { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; font-weight: bold; background: #1e3a5f; color: #38bdf8; border: 1px solid #0284c7; }
+    .mon-stats { font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
+    .mon-counter { font-size: 0.74rem; background: #111e33; padding: 3px 6px; border-radius: 4px; border-left: 3px solid var(--gold); color: #e2e8f0; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div id="toast-msg" class="hidden">알림</div>
+
+  <!-- 상단 정보 헤더 -->
+  <header>
+    <div class="title-group">
+      <h1>🛡️ Math Defenders 3</h1>
+      <span id="display-user-info" style="font-size: 0.82rem; color: #94a3b8;">로그인 중...</span>
+    </div>
+    <div class="stats-group">
+      <div id="stat-gold-wrap" class="hidden">골드: <span id="val-gold" style="color:var(--gold);">300</span>G</div>
+      <div id="stat-wave-wrap" class="hidden">웨이브: <span id="val-wave" style="color:var(--accent);">1</span></div>
+      <div id="stat-leaks-wrap" class="hidden">통과: <span id="val-leaks" style="color:var(--danger);">0</span>/3</div>
+      <div>★ <span id="val-stars" style="color:var(--gold);">0</span></div>
+      <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 랭킹</button>
+      <button class="btn" style="background:#0284c7; color:#fff;" onclick="openSynergyModal()">📖 상성 도감</button>
+      <button class="btn btn-secondary hidden" id="btn-exit-wave" onclick="exitToLobby()">🚪 나가기</button>
+      <button class="btn btn-danger hidden" id="btn-logout" onclick="handleLogout()">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- 1. 웨이브 선택 로비 -->
+  <div id="stage-select-view">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+      <div>
+        <h2 style="font-size: 1.25rem; color: var(--accent);">🗺️ 웨이브 선택 로비</h2>
+        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 3px;">도전할 웨이브를 선택하세요. 별(★)을 모으면 강력한 상생 포탑과 무한 모드가 해금됩니다!</p>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 1rem; font-weight: bold; color: var(--gold);">
+          내 누적 별점: ★ <span id="lobby-total-stars">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 별 누적 포탑 해금 현황 바 (총 9종) -->
+    <div style="margin-top: 12px; padding: 10px; background: #070b14; border-radius: 8px; border: 1px solid #1a2538;">
+      <div style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; margin-bottom: 6px;">🎁 누적 별 보상 달성 현황 (총 9종 포탑 라인업)</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 6px; font-size: 0.72rem;">
+        <div id="badge-unlock-root" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">√ 루트 빔: 기본</div>
+        <div id="badge-unlock-factor" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">(x+a) 게틀링: 기본</div>
+        <div id="badge-unlock-rational" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">÷ 유리화포: ★ 3개</div>
+        <div id="badge-unlock-quad" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">x² 곡사포: ★ 8개</div>
+        <div id="badge-unlock-discr" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">D 판별 레이저: ★ 15개</div>
+        <div id="badge-unlock-trig" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">sinθ 스나이퍼: ★ 24개</div>
+        <div id="badge-unlock-tan" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">tan 기울기 캐논: ★ 33개</div>
+        <div id="badge-unlock-circle" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">○ 원주각 테슬라: ★ 42개</div>
+        <div id="badge-unlock-stat" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">σ 통계 분산포: ★ 52개</div>
+      </div>
+    </div>
+
+    <!-- 스테이지 카드 그리드 -->
+    <div class="stage-grid" id="stage-grid-container"></div>
+  </div>
+
+  <!-- 2. 전투 및 퀴즈 플레이 화면 -->
+  <div id="game-play-view" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <div id="game-container">
+      <canvas id="gameCanvas" width="900" height="450"></canvas>
+      
+      <!-- 포탑 인스펙터 플로팅 패널 -->
+      <div id="tower-inspector-modal" class="hidden">
+        <div class="insp-title">
+          <span id="insp-name">포탑 정보</span>
+          <span id="insp-level" style="color:var(--gold); font-size:0.75rem;">Lv.1</span>
+        </div>
+        <div class="insp-stat" id="insp-dmg">공격력: 20</div>
+        <div class="insp-stat" id="insp-range">사거리: 140</div>
+        <div class="insp-stat" id="insp-rate">연사속도: 보통</div>
+        <div class="insp-btns">
+          <button class="btn" id="btn-insp-upgrade" style="flex:1; padding:5px 7px; font-size:0.75rem;" onclick="upgradeSelectedTower()">강화 (100G)</button>
+          <button class="btn btn-danger" id="btn-insp-sell" style="padding:5px 7px; font-size:0.75rem;" onclick="sellSelectedTower()">철거 (+50G)</button>
+        </div>
+        <button class="btn btn-secondary" style="width:100%; margin-top:5px; padding:3px; font-size:0.7rem;" onclick="closeTowerInspector()">닫기</button>
+      </div>
+    </div>
+
+    <div id="dashboard">
+      <!-- 퀴즈 패널 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>📖 수학 정비 페이즈 (남은 문제: <span id="val-quiz-left">3</span>/3)</span>
+          <span id="quiz-cat" style="font-size:0.78rem; color:#94a3b8;">중3 수학</span>
+        </div>
+        <div id="quiz-box">
+          <div id="question-text">문제를 불러오는 중...</div>
+          <div class="choices-grid" id="choices-container"></div>
+        </div>
+        <div style="font-size: 0.72rem; color: #64748b; margin-top: 6px;">* 정답 시 100G 즉시 지급! 틀려도 해설을 읽고 개념을 다질 수 있습니다.</div>
+      </div>
+
+      <!-- 포탑 배치 패널 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>🔨 포탑 배치 (9종 라인업)</span>
+            <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.72rem; border-color: var(--accent); color: var(--accent);" onclick="openSynergyModal()">📖 상성 도감</button>
+          </div>
+          <span style="font-size:0.75rem; color:#94a3b8;">길가 점선 슬롯을 클릭해 설치</span>
+        </div>
+        <div class="tower-cards" id="tower-cards-container">
+          <div class="tower-card selected" onclick="selectTowerType('root')" id="card-root">
+            <div class="t-name">√ 루트 레이저</div>
+            <div class="t-cost">100 G</div>
+            <div class="t-desc">지속 감속(35%) + 네온 빔</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('factor')" id="card-factor">
+            <div class="t-name">(x+a) 인수분해포</div>
+            <div class="t-cost">140 G</div>
+            <div class="t-desc">쌍열 고속 연타 / 슬라임 카운터</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('rational')" id="card-rational">
+            <div class="t-lock-badge hidden" id="lock-rational">🔒 3★</div>
+            <div class="t-name">÷ 유리화포</div>
+            <div class="t-cost">170 G</div>
+            <div class="t-desc">골렘 장갑 파괴 / 관통탄</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('quadratic')" id="card-quadratic">
+            <div class="t-lock-badge hidden" id="lock-quadratic">🔒 8★</div>
+            <div class="t-name">x² 곡사포</div>
+            <div class="t-cost">210 G</div>
+            <div class="t-desc">포물선 탄도 / 광역 폭발</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('discr')" id="card-discr">
+            <div class="t-lock-badge hidden" id="lock-discr">🔒 15★</div>
+            <div class="t-name">D 판별 레이저</div>
+            <div class="t-cost">240 G</div>
+            <div class="t-desc">체력 비례 폭딜 / 무리수 재생체 저격</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('trig')" id="card-trig">
+            <div class="t-lock-badge hidden" id="lock-trig">🔒 24★</div>
+            <div class="t-name">sinθ 스나이퍼</div>
+            <div class="t-cost">270 G</div>
+            <div class="t-desc">초장거리 / 고속비행기 즉각 격추</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('tan')" id="card-tan">
+            <div class="t-lock-badge hidden" id="lock-tan">🔒 33★</div>
+            <div class="t-name">tan 기울기 캐논</div>
+            <div class="t-cost">300 G</div>
+            <div class="t-desc">밀쳐내기(넉백) / 가속 돌진체 카운터</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('circle')" id="card-circle">
+            <div class="t-lock-badge hidden" id="lock-circle">🔒 42★</div>
+            <div class="t-name">○ 원주각 테슬라</div>
+            <div class="t-cost">330 G</div>
+            <div class="t-desc">360° 광역 체인 감전 / 실드 파괴</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('stat')" id="card-stat">
+            <div class="t-lock-badge hidden" id="lock-stat">🔒 52★</div>
+            <div class="t-name">σ 통계 분산포</div>
+            <div class="t-cost">380 G</div>
+            <div class="t-desc">적 밀집 시 폭발력 3배 / 군집체 킬러</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn" id="btn-start-wave" onclick="startWave()">▶ 웨이브 출격!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 1: 로그인 -->
+  <div class="modal-overlay" id="modal-login">
+    <div class="modal-card">
+      <h2>🎮 로그인 & 계정 확인</h2>
+      <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px;">닉네임과 학급, 비밀번호를 입력하세요.<br>(처음 입력한 정보로 자동 등록되며 비밀번호는 보호됩니다)</p>
+      <div class="form-group">
+        <label>소속 학급</label>
+        <select id="login-class">
+          <option value="3-1">3학년 1반</option>
+          <option value="3-2">3학년 2반</option>
+          <option value="3-3">3학년 3반</option>
+          <option value="3-4">3학년 4반</option>
+          <option value="3-5" selected>3학년 5반</option>
+          <option value="3-6">3학년 6반</option>
+          <option value="3-7">3학년 7반</option>
+          <option value="3-8">3학년 8반</option>
+          <option value="3-9">3학년 9반</option>
+          <option value="3-10">3학년 10반</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>개인 닉네임</label>
+        <input type="text" id="login-id" placeholder="예: 오일러, 피타고라스" maxlength="10">
+      </div>
+      <div class="form-group">
+        <label>비밀번호 (화면상 비노출 보호)</label>
+        <input type="password" id="login-pw" placeholder="비밀번호" maxlength="12">
+      </div>
+      <button class="btn" style="width: 100%; margin-top: 8px;" id="btn-do-login" onclick="handleLogin()">게임 시작</button>
+      <div id="login-msg" style="color:var(--danger); font-size:0.8rem; margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- 모달 2: 오답 해설 -->
+  <div class="modal-overlay hidden" id="modal-explain">
+    <div class="modal-card">
+      <h2 style="color:var(--danger);">❌ 오답입니다!</h2>
+      <div id="explain-content" style="text-align: left; font-size: 0.88rem; line-height: 1.5; margin: 12px 0; background: #080d17; padding: 12px; border-radius: 8px;"></div>
+      <button class="btn" onclick="closeExplainModal()">확인 & 다음 문제</button>
+    </div>
+  </div>
+
+  <!-- 모달 2-1: 몬스터 시각화 & 포탑 상성 종합 도감 (대형 도감) -->
+  <div class="modal-overlay hidden" id="modal-synergy">
+    <div class="modal-card" style="max-width: 600px; text-align: left; padding: 18px 22px;">
+      <h2 style="color:var(--accent); text-align: center; margin-bottom: 4px; font-size: 1.2rem;">📖 몬스터 정보 & 포탑 상성 도감</h2>
+      <p style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-bottom: 12px;">게임 화면 속 몬스터의 실제 모양과 출현 시기, 카운터 포탑을 확인하세요.</p>
+
+      <!-- 탭 선택기 -->
+      <div class="guide-tabs">
+        <button class="guide-tab-btn active" id="tab-btn-monsters" onclick="switchGuideTab('monsters')">👾 몬스터 도감 (8종 실제 외형)</button>
+        <button class="guide-tab-btn" id="tab-btn-towers" onclick="switchGuideTab('towers')">🛡️ 포탑 상성표 (9종 라인업)</button>
+      </div>
+
+      <!-- 탭 1: 몬스터 8종 시각화 그래픽 목록 -->
+      <div id="guide-view-monsters" style="max-height: 380px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 8px;">
+        
+        <!-- 1. 중장갑 골렘 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 인게임 주황 사각 블록 재현 -->
+            <div style="width: 32px; height: 32px; background: #f97316; border: 2px solid #fed7aa; display: flex; align-items: center; justify-content: center; transform: rotate(15deg); box-shadow: 0 0 8px rgba(249,115,22,0.4);">
+              <span style="font-size: 8px; font-weight: bold; color: #fff; transform: rotate(-15deg);">x²-a²</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #fb923c;">중장갑 골렘 (x²-a²)</span>
+              <span class="mon-wave-badge">1웨이브~ 상시</span>
+            </div>
+            <div class="mon-stats">회전하는 주황색 사각 블록 | <b>기본 체력 3.0배</b> (극도로 단단함)</div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#38bdf8;">√ 루트 빔</span> (2배 지속딜) / <span style="color:#3b82f6;">÷ 유리화포</span> (2.5배 장갑 관통)</div>
+          </div>
+        </div>
+
+        <!-- 2. 분열 슬라임 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 인게임 통통 튀는 타원 슬라임 재현 -->
+            <div style="width: 34px; height: 26px; background: #10b981; border: 2px solid #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(16,185,129,0.4);">
+              <span style="font-size: 8px; font-weight: bold; color: #fff;">(x+a)</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #34d399;">분열 슬라임 (x+a)</span>
+              <span class="mon-wave-badge">1웨이브~ 상시</span>
+            </div>
+            <div class="mon-stats">통통 튀는 초록색 타원 | 빠른 이동 속도 (1.3배)</div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#22c55e;">(x+a) 인수분해 게틀링</span> (1.8배 폭딜 연타)</div>
+          </div>
+        </div>
+
+        <!-- 3. 고속 비행체 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 인게임 삼각 비행체 재현 -->
+            <div style="width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 26px solid #a855f7; display: flex; align-items: center; justify-content: center; position: relative;">
+              <span style="position: absolute; top: 11px; font-size: 7px; font-weight: bold; color: #fff;">30°</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #c084fc;">고속 비행체 (30°)</span>
+              <span class="mon-wave-badge">1웨이브~ 상시</span>
+            </div>
+            <div class="mon-stats">보라색 쐐기형 삼각형 | <b>초고속 돌파 (1.75배)</b></div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#ec4899;">sinθ 스나이퍼</span> (초장거리 2.5배 일격 격추)</div>
+          </div>
+        </div>
+
+        <!-- 4. 무리수 재생체 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 청록색 구체와 십자 회복 오라 재현 -->
+            <div style="width: 32px; height: 32px; background: #06b6d4; border: 2px solid #a5f3fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(6,182,212,0.5);">
+              <span style="font-size: 10px; font-weight: bold; color: #fff;">√p</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #22d3ee;">무리수 재생체 (√p)</span>
+              <span class="mon-wave-badge" style="background:#0e4a5a; color:#22d3ee; border-color:#06b6d4;">5웨이브~ 출현</span>
+            </div>
+            <div class="mon-stats">청록색 원형 구체 | <b>실시간 체력 자가 치유(지속 힐링)</b></div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#f97316;">D 판별 레이저</span> (잔여 체력 비례 극딜로 즉시 삭제)</div>
+          </div>
+        </div>
+
+        <!-- 5. 가속 돌진체 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 붉은 돌진 화살표 재현 -->
+            <div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 24px solid #f43f5e; display: flex; align-items: center; justify-content: center; position: relative;">
+              <span style="position: absolute; top: 11px; font-size: 7px; font-weight: bold; color: #fff;">Δv</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #fb7185;">가속 돌진체 (Δv)</span>
+              <span class="mon-wave-badge" style="background:#581c2b; color:#fb7185; border-color:#f43f5e;">9웨이브~ 출현</span>
+            </div>
+            <div class="mon-stats">붉은색 화살촉 | <b>이동할수록 기하급수적으로 속도 증가</b></div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#14b8a6;">tan 기울기 캐논</span> (피격 시 넉백으로 뒤로 밀쳐냄)</div>
+          </div>
+        </div>
+
+        <!-- 6. 방어막 실드체 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 파란 원과 외부 실드 링 재현 -->
+            <div style="width: 36px; height: 36px; border: 2px dashed #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(56,189,248,0.6);">
+              <div style="width: 24px; height: 24px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 11px; font-weight: bold; color: #fff;">⊙</span>
+              </div>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #60a5fa;">방어막 실드체 (⊙)</span>
+              <span class="mon-wave-badge" style="background:#1e3a8a; color:#93c5fd; border-color:#3b82f6;">13웨이브~ 출현</span>
+            </div>
+            <div class="mon-stats">푸른색 에너지 링 | <b>체력 65%에 달하는 강력한 쉴드 보호막</b></div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#06b6d4;">○ 원주각 테슬라</span> (쉴드에 2.5배 체인 감전 대미지)</div>
+          </div>
+        </div>
+
+        <!-- 7. 통계 군집체 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 노란 소형 구체 3개 군집 재현 -->
+            <div style="display: flex; gap: 3px; align-items: center;">
+              <div style="width: 14px; height: 14px; background: #eab308; border-radius: 50%; font-size: 7px; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;">σ</div>
+              <div style="width: 18px; height: 18px; background: #eab308; border-radius: 50%; font-size: 8px; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;">σ</div>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #fde047;">통계 군집체 (σ)</span>
+              <span class="mon-wave-badge" style="background:#533f03; color:#fde047; border-color:#eab308;">17웨이브~ 출현</span>
+            </div>
+            <div class="mon-stats">작은 노란색 다수 구체 | <b>떼지어 빠른 속도로 몰려오는 물량 공세</b></div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#a855f7;">σ 통계 분산포</span> (주변 적 밀집 시 3배 광역 폭발)</div>
+          </div>
+        </div>
+
+        <!-- 8. 일반 정찰병 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <!-- 붉은 기본 원 재현 -->
+            <div style="width: 28px; height: 28px; background: #ef4444; border: 2px solid #fecaca; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 11px; font-weight: bold; color: #fff;">k</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #f87171;">수학 정찰병 (k)</span>
+              <span class="mon-wave-badge">1웨이브~ 상시</span>
+            </div>
+            <div class="mon-stats">붉은색 원형 | 표준 체력과 속도의 기본 몬스터</div>
+            <div class="mon-counter">🎯 <b>카운터 포탑:</b> 모든 기본 포탑으로 손쉽게 격퇴 가능</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 탭 2: 포탑 9종 상성표 목록 -->
+      <div id="guide-view-towers" class="hidden" style="max-height: 380px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem;">
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #38bdf8;">
+          <b style="color:#38bdf8;">√ 루트 빔 (기본 해금):</b> 지속 감속(35%) 네온 빔. 단단한 <b>골렘(x²-a²)</b>에게 2배 피해.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #22c55e;">
+          <b style="color:#22c55e;">(x+a) 인수분해포 (기본 해금):</b> 고속 연사 게틀링. 분열하는 <b>슬라임(x+a)</b> 카운터 (1.8배 폭딜).
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #3b82f6;">
+          <b style="color:#3b82f6;">÷ 유리화포 (★ 3개 해금):</b> 분모 유리화 관통탄. <b>골렘(x²-a²)</b> 장갑을 뚫고 2.5배 관통 피해.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #facc15;">
+          <b style="color:#facc15;">x² 곡사포 (★ 8개 해금):</b> 포물선 궤적으로 낙하하는 강력한 광역 스플래시 폭발탄.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #f97316;">
+          <b style="color:#f97316;">D 판별 레이저 (★ 15개 해금):</b> 체력 비율 비례 극딜. 자가 치유하는 <b>무리수 재생체(√p)</b> 즉각 저격.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #ec4899;">
+          <b style="color:#ec4899;">sinθ 스나이퍼 (★ 24개 해금):</b> 맵 전체를 사정거리에 두는 저격포. <b>고속 비행체(30°)</b> 2.5배 즉각 격추.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #14b8a6;">
+          <b style="color:#14b8a6;">tan 기울기 캐논 (★ 33개 해금):</b> 넉백(밀쳐내기) 충격파. 가속 돌진하는 <b>돌진체(Δv)</b>의 발을 묶음.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #06b6d4;">
+          <b style="color:#06b6d4;">○ 원주각 테슬라 (★ 42개 해금):</b> 360° 광역 체인 감전. <b>방어막 실드체(⊙)</b>의 보호막을 2.5배로 분쇄.
+        </div>
+        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #a855f7;">
+          <b style="color:#a855f7;">σ 통계 분산포 (★ 52개 해금):</b> 적 밀집도에 비례해 최대 3배 폭발. <b>통계 군집체(σ)</b> 완벽 제압.
+        </div>
+      </div>
+
+      <button class="btn" style="width:100%; margin-top:12px;" onclick="closeSynergyModal()">도감 닫기</button>
+    </div>
+  </div>
+
+  <!-- 모달 3: 웨이브 결과 -->
+  <div class="modal-overlay hidden" id="modal-result">
+    <div class="modal-card">
+      <h2 id="result-title">웨이브 클리어!</h2>
+      <div id="result-stars" style="font-size: 2rem; color: var(--gold); margin: 8px 0;">★★★</div>
+      <p id="result-desc" style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 16px; white-space: pre-line;"></p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button class="btn btn-secondary" onclick="exitToLobbyFromModal()">로비로 이동</button>
+        <button class="btn" id="btn-next-action">다음</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 4: 랭킹 -->
+  <div class="modal-overlay hidden" id="modal-leaderboard">
+    <div class="modal-card" style="max-width: 580px;">
+      <h2>🏆 실시간 명예의 전당</h2>
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="switchRankTab('personal')">개인 TOP 10</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="switchRankTab('class')">학급 대항전</button>
+      </div>
+      <div id="rank-content" style="max-height: 250px; overflow-y: auto;">
+        <p style="padding: 20px; color:#94a3b8;">불러오는 중...</p>
+      </div>
+      <button class="btn btn-secondary" style="width:100%; margin-top:12px;" onclick="closeLeaderboard()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 모달 5: 공통 경고 모달 -->
+  <div class="modal-overlay hidden" id="modal-alert">
+    <div class="modal-card">
+      <h2 style="color:var(--danger);" id="modal-alert-title">⚠️ 알림</h2>
+      <p id="modal-alert-desc" style="font-size:0.9rem; color:#f1f5f9; margin: 14px 0; white-space: pre-line;"></p>
+      <button class="btn" onclick="closeAlertModal()">확인</button>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================================
+       1. 백엔드 통신 및 데이터 관리
+       ======================================================== */
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzWJmuqKc55A8bkXA6uYM0Mj_risVnXVHidcwkMAW81TiBCBEdj-sdIOD2_WC_PZi_Nw/exec";
+
+    let currentUser = {
+      username: "",
+      className: "",
+      password: "",
+      totalStars: 0,
+      maxWave: 1,
+      score: 0,
+      solvedCount: 0
+    };
+
+    const TOTAL_STAGES = 20;
+    const stageStars = {};
+
+    function saveUserGold() {
+      if (currentUser.username) {
+        localStorage.setItem(`md3_gold_${currentUser.username}`, gold);
+      }
+    }
+
+    function saveStageStars() {
+      if (currentUser.username) {
+        localStorage.setItem(`md3_stars_${currentUser.username}`, JSON.stringify(stageStars));
+      }
+    }
+
+    function loadStageStars() {
+      if (!currentUser.username) return;
+      const saved = localStorage.getItem(`md3_stars_${currentUser.username}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          Object.assign(stageStars, parsed);
+        } catch (e) {}
+      }
+    }
+
+    function recalculateTotalStars() {
+      let sum = 0;
+      for (let s = 1; s <= TOTAL_STAGES; s++) {
+        sum += (stageStars[s] || 0);
+      }
+      currentUser.totalStars = sum;
+      return sum;
+    }
+
+    function serializeTowers() {
+      return towers.map(t => ({
+        slotId: t.slot.id,
+        type: t.type,
+        level: t.level
+      }));
+    }
+
+    function saveUserTowers() {
+      if (currentUser.username) {
+        localStorage.setItem(`md3_towers_${currentUser.username}`, JSON.stringify(serializeTowers()));
+      }
+    }
+
+    function clearAllTowers() {
+      towers = [];
+      SLOTS.forEach(s => s.tower = null);
+      closeTowerInspector();
+    }
+
+    function restoreTowers(towersData) {
+      clearAllTowers();
+      if (!towersData) return;
+
+      let parsed = towersData;
+      if (typeof towersData === "string") {
+        try {
+          parsed = JSON.parse(towersData);
+        } catch (e) {
+          parsed = [];
+        }
+      }
+
+      if (!Array.isArray(parsed)) return;
+
+      parsed.forEach(item => {
+        const slot = SLOTS.find(s => s.id === item.slotId);
+        if (slot && !slot.tower && TOWER_SPECS[item.type]) {
+          const t = new Tower(slot, item.type);
+          const targetLevel = Math.min(3, Math.max(1, Number(item.level) || 1));
+          t.level = targetLevel;
+          if (targetLevel === 2) {
+            t.totalInvested = t.spec.cost + Math.round(t.spec.cost * 0.85);
+          } else if (targetLevel === 3) {
+            t.totalInvested = t.spec.cost + Math.round(t.spec.cost * 0.85) + Math.round(t.spec.cost * 1.35);
+          }
+          slot.tower = t;
+          towers.push(t);
+        }
+      });
+      saveUserTowers();
+    }
+
+    function showToast(text, color = "var(--accent)") {
+      const t = document.getElementById('toast-msg');
+      t.innerText = text;
+      t.style.borderColor = color;
+      t.classList.remove('hidden');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.add('hidden'), 2300);
+    }
+
+    function showAlertModal(title, text) {
+      document.getElementById('modal-alert-title').innerText = title;
+      document.getElementById('modal-alert-desc').innerText = text;
+      document.getElementById('modal-alert').classList.remove('hidden');
+    }
+
+    function closeAlertModal() {
+      document.getElementById('modal-alert').classList.add('hidden');
+    }
+
+    /* 도감 모달 및 탭 제어 */
+    function openSynergyModal() {
+      const modal = document.getElementById('modal-synergy');
+      if (modal) modal.classList.remove('hidden');
+      switchGuideTab('monsters');
+    }
+
+    function closeSynergyModal() {
+      const modal = document.getElementById('modal-synergy');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function switchGuideTab(tab) {
+      const monView = document.getElementById('guide-view-monsters');
+      const towView = document.getElementById('guide-view-towers');
+      const monBtn = document.getElementById('tab-btn-monsters');
+      const towBtn = document.getElementById('tab-btn-towers');
+
+      if (!monView || !towView || !monBtn || !towBtn) return;
+
+      if (tab === 'monsters') {
+        monView.classList.remove('hidden');
+        towView.classList.add('hidden');
+        monBtn.classList.add('active');
+        towBtn.classList.remove('active');
+      } else {
+        monView.classList.add('hidden');
+        towView.classList.remove('hidden');
+        towBtn.classList.add('active');
+        monBtn.classList.remove('active');
+      }
+    }
+
+    /* 로그인 처리 */
+    async function handleLogin() {
+      const id = document.getElementById('login-id').value.trim();
+      const pw = document.getElementById('login-pw').value.trim();
+      const cls = document.getElementById('login-class').value;
+      const msg = document.getElementById('login-msg');
+
+      if (!id || !pw) {
+        msg.innerText = "닉네임과 비밀번호를 모두 입력하세요.";
+        return;
+      }
+      msg.innerText = "구글 시트 서버와 연결 중...";
+      document.getElementById('btn-do-login').disabled = true;
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "login",
+            username: id,
+            className: cls,
+            password: pw
+          })
+        });
+        const data = await res.json();
+        document.getElementById('btn-do-login').disabled = false;
+
+        if (data.success) {
+          currentUser.username = data.user.username;
+          const rawClass = String(data.user.className || cls);
+          currentUser.className = (rawClass.includes('T') || rawClass.includes('-0')) ? cls : rawClass;
+          currentUser.password = pw;
+          currentUser.totalStars = Number(data.user.totalStars) || 0;
+          currentUser.maxWave = Math.max(1, Number(data.user.maxWave) || 1);
+          currentUser.score = Number(data.user.score) || 0;
+          currentUser.solvedCount = Number(data.user.solvedCount) || 0;
+
+          if (data.isNew) {
+            localStorage.removeItem(`md3_gold_${currentUser.username}`);
+            localStorage.removeItem(`md3_towers_${currentUser.username}`);
+            localStorage.removeItem(`md3_stars_${currentUser.username}`);
+            for (let k in stageStars) delete stageStars[k];
+            clearAllTowers();
+          }
+
+          if (data.user.gold !== undefined && data.user.gold !== null && !isNaN(Number(data.user.gold))) {
+            gold = Number(data.user.gold);
+          } else {
+            const savedGold = localStorage.getItem(`md3_gold_${currentUser.username}`);
+            gold = (savedGold !== null && !isNaN(Number(savedGold))) ? Number(savedGold) : 300;
+          }
+          saveUserGold();
+
+          let towerDataToRestore = data.user.towers;
+          if (!data.isNew && (towerDataToRestore === undefined || towerDataToRestore === null)) {
+            const localSaved = localStorage.getItem(`md3_towers_${currentUser.username}`);
+            if (localSaved) towerDataToRestore = localSaved;
+          }
+          restoreTowers(towerDataToRestore);
+
+          if (!data.isNew) {
+            loadStageStars();
+            let localSum = recalculateTotalStars();
+            if (localSum === 0 && currentUser.totalStars > 0) {
+              let remaining = Math.min(currentUser.totalStars, (currentUser.maxWave - 1) * 3);
+              for (let s = 1; s < currentUser.maxWave; s++) {
+                const stars = Math.min(3, Math.max(1, remaining));
+                stageStars[s] = stars;
+                remaining = Math.max(0, remaining - stars);
+              }
+            }
+          }
+
+          recalculateTotalStars();
+          saveStageStars();
+          syncProgressToServer();
+
+          document.getElementById('modal-login').classList.add('hidden');
+          document.getElementById('display-user-info').innerText = `[${currentUser.className}] ${currentUser.username} 님`;
+          document.getElementById('btn-logout').classList.remove('hidden');
+
+          showLobby();
+          updateTowerUnlockUI();
+          showToast(`환영합니다, ${currentUser.username} 대원님!`, "var(--success)");
+        } else {
+          msg.innerText = "";
+          showAlertModal("⚠️ 로그인 실패", data.message || "비밀번호가 일치하지 않습니다.");
+        }
+      } catch (err) {
+        document.getElementById('btn-do-login').disabled = false;
+        msg.innerText = "";
+        showAlertModal("⚠️️ 서버 통신 오류", `구글 시트와 통신할 수 없습니다:\n${err.message}`);
+      }
+    }
+
+    document.getElementById('login-pw').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin(); });
+    document.getElementById('login-id').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin(); });
+
+    async function syncProgressToServer() {
+      if (!currentUser.username || !currentUser.password) return;
+      saveUserGold();
+      saveUserTowers();
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "syncProgress",
+            username: currentUser.username,
+            password: currentUser.password,
+            totalStars: currentUser.totalStars,
+            maxWave: currentUser.maxWave,
+            score: currentUser.score,
+            solvedCount: currentUser.solvedCount,
+            gold: gold,
+            towers: serializeTowers()
+          })
+        });
+      } catch (e) {
+        console.warn("Sync error:", e);
+      }
+    }
+
+    window.addEventListener('beforeunload', () => {
+      syncProgressToServer();
+    });
+
+    function handleLogout() {
+      clearAllTowers();
+      currentUser = { username: "", className: "", password: "", totalStars: 0, maxWave: 1, score: 0, solvedCount: 0 };
+      document.getElementById('modal-login').classList.remove('hidden');
+      document.getElementById('stage-select-view').classList.add('hidden');
+      document.getElementById('game-play-view').classList.add('hidden');
+      document.getElementById('btn-logout').classList.add('hidden');
+      document.getElementById('btn-exit-wave').classList.add('hidden');
+      document.getElementById('stat-gold-wrap').classList.add('hidden');
+      document.getElementById('stat-wave-wrap').classList.add('hidden');
+      document.getElementById('stat-leaks-wrap').classList.add('hidden');
+      document.getElementById('display-user-info').innerText = "로그인 필요";
+    }
+
+    /* 랭킹 뷰어 */
+    let cachedRanks = null;
+    async function openLeaderboard() {
+      document.getElementById('modal-leaderboard').classList.remove('hidden');
+      const box = document.getElementById('rank-content');
+      box.innerHTML = "<p style='padding:20px; color:#94a3b8;'>랭킹 데이터를 불러오는 중...</p>";
+
+      try {
+        const res = await fetch(SCRIPT_URL + "?action=getLeaderboard");
+        cachedRanks = await res.json();
+        switchRankTab('personal');
+      } catch (e) {
+        box.innerHTML = "<p style='padding:20px; color:var(--danger);'>랭킹 정보를 불러오지 못했습니다.</p>";
+      }
+    }
+
+    function switchRankTab(type) {
+      if (!cachedRanks) return;
+      const box = document.getElementById('rank-content');
+
+      const cleanClass = (val) => {
+        let s = String(val || "").trim();
+        if (s.startsWith("'")) s = s.substring(1);
+        if (s.includes("T") || s.includes("GMT") || s.includes("2026-") || s.includes("한국 표준시")) {
+          const dObj = new Date(s);
+          if (!isNaN(dObj.getTime())) {
+            const kst = new Date(dObj.getTime() + (9 * 60 * 60 * 1000));
+            const m = kst.getUTCMonth() + 1;
+            const d = kst.getUTCDate();
+            if (m === 3 && d >= 1 && d <= 12) return `3-${d}`;
+          }
+          return "3-5";
+        }
+        return s || "3-5";
+      };
+
+      if (type === 'personal') {
+        let html = `<table class="rank-table"><thead><tr><th>순위</th><th>반</th><th>닉네임</th><th>최고W</th><th>★</th><th>점수</th></tr></thead><tbody>`;
+        if (cachedRanks.topUsers && cachedRanks.topUsers.length > 0) {
+          cachedRanks.topUsers.forEach((u, i) => {
+            html += `<tr><td>${i+1}</td><td>${cleanClass(u.className)}</td><td>${u.username}</td><td>W${u.maxWave}</td><td>★${u.totalStars}</td><td>${Number(u.score).toLocaleString()}</td></tr>`;
+          });
+        } else {
+          html += `<tr><td colspan="6" style="padding:15px; color:#64748b;">아직 등록된 랭킹 기록이 없습니다.</td></tr>`;
+        }
+        html += `</tbody></table>`;
+        box.innerHTML = html;
+      } else {
+        let html = `<table class="rank-table"><thead><tr><th>순위</th><th>학급</th><th>총 누적점수</th><th>총 별점</th><th>참여 학생</th></tr></thead><tbody>`;
+        if (cachedRanks.classRanks && cachedRanks.classRanks.length > 0) {
+          cachedRanks.classRanks.forEach((c, i) => {
+            const displayCName = cleanClass(c.className);
+            html += `<tr><td>${i+1}</td><td>${displayCName}</td><td>${Number(c.totalScore).toLocaleString()}</td><td>★${c.totalStars}</td><td>${c.studentCount}명</td></tr>`;
+          });
+        } else {
+          html += `<tr><td colspan="5" style="padding:15px; color:#64748b;">학급 기록이 없습니다.</td></tr>`;
+        }
+        html += `</tbody></table>`;
+        box.innerHTML = html;
+      }
+    }
+
+    function closeLeaderboard() {
+      document.getElementById('modal-leaderboard').classList.add('hidden');
+    }
+
+    /* ========================================================
+       2. 중3 전 단원 49종 문제 생성기
+       ======================================================== */
+    const QuestionEngine = {
+      generators: [
+        // 1. 실수와 연산 (7종)
+        () => {
+          const a = [2, 3, 4, 5, 6, 7][Math.floor(Math.random() * 6)];
+          const b = [2, 3, 5, 6, 7][Math.floor(Math.random() * 5)];
+          const inside = a * a * b;
+          return { category: "실수와 연산: a√b 변환", q: `√${inside} 를 a√b 꼴로 바르게 나타낸 것은?`, correct: `${a}√${b}`, wrong: [`${b}√${a}`, `${a * 2}√${b}`, `${a * b}√${b}`], explain: `√${inside} = √(${a}² × ${b}) = ${a}√${b} 입니다.` };
+        },
+        () => {
+          const n = [16, 25, 36, 49, 64, 81, 100, 121, 144][Math.floor(Math.random() * 9)];
+          const rootVal = Math.sqrt(n);
+          return { category: "실수와 연산: 제곱근의 성질", q: `√(-${rootVal})² 의 올바른 값은?`, correct: `${rootVal}`, wrong: [`-${rootVal}`, `±${rootVal}`, `${rootVal * rootVal}`], explain: `√(-a)² = |-a| = a 이므로 값은 항상 양수 ${rootVal} 입니다.` };
+        },
+        () => {
+          const b = [2, 3, 5, 6][Math.floor(Math.random() * 4)];
+          const k = [2, 3, 4, 5][Math.floor(Math.random() * 4)];
+          const top = k * b;
+          return { category: "실수와 연산: 분모의 유리화", q: `분수 ${top} / √${b} 의 분모를 유리화한 결과는?`, correct: `${k}√${b}`, wrong: [`${top}√${b}`, `${k}`, `√${b} / ${k}`], explain: `분모와 분자에 √${b}를 곱하면 (${top}√${b}) / ${b} = ${k}√${b} 가 됩니다.` };
+        },
+        () => {
+          const a = Math.floor(Math.random() * 4) + 2;
+          const diff = Math.floor(Math.random() * 3) + 1;
+          const val = a * a + diff;
+          return { category: "실수와 연산: 정수 부분", q: `√${val} 의 정수 부분은 얼마인가?`, correct: `${a}`, wrong: [`${a - 1}`, `${a + 1}`, `${a + 2}`], explain: `√${a * a} = ${a} 이고 √${(a + 1) * (a + 1)} = ${a + 1} 이므로, √${val}의 정수 부분은 ${a}입니다.` };
+        },
+        () => {
+          const b = [2, 3, 5, 7][Math.floor(Math.random() * 4)];
+          const c1 = Math.floor(Math.random() * 4) + 3;
+          const c2 = Math.floor(Math.random() * 3) + 1;
+          const sum = c1 + c2;
+          return { category: "실수와 연산: 무리수 덧셈", q: `${c1}√${b} + ${c2}√${b} 를 계산한 결과는?`, correct: `${sum}√${b}`, wrong: [`${sum}√${b * 2}`, `${c1 * c2}√${b}`, `${sum}`], explain: `근호 안의 수가 같으므로 계수끼리 더합니다: (${c1} + ${c2})√${b} = ${sum}√${b}.` };
+        },
+        () => {
+          const x = [2, 3, 5][Math.floor(Math.random() * 3)];
+          const y = [3, 5, 7].filter(v => v !== x)[Math.floor(Math.random() * 2)];
+          return { category: "실수와 연산: 제곱근 곱셈", q: `√${x} × √${y} 를 간단히 한 것은?`, correct: `√${x * y}`, wrong: [`${x * y}`, `√${x + y}`, `${x}√${y}`], explain: `√a × √b = √(a × b) 이므로 √${x} × √${y} = √${x * y} 입니다.` };
+        },
+        () => {
+          const a = [3, 4, 5][Math.floor(Math.random() * 3)];
+          const rootVal = a * a + 2;
+          return { category: "실수와 연산: 대소 비교", q: `다음 중 √${rootVal} 과 ${a} 의 대소 관계로 옳은 것은?`, correct: `√${rootVal} > ${a}`, wrong: [`√${rootVal} < ${a}`, `√${rootVal} = ${a}`, `비교할 수 없다`], explain: `${a} = √${a * a} 이고, ${rootVal} > ${a * a} 이므로 √${rootVal} > ${a} 입니다.` };
+        },
+
+        // 2. 인수분해 (7종)
+        () => {
+          const a = Math.floor(Math.random() * 6) + 1;
+          const b = Math.floor(Math.random() * 6) + 1;
+          const sum = a + b;
+          const prod = a * b;
+          return { category: "인수분해: 기본 다항식", q: `다항식 x² + ${sum}x + ${prod} 를 인수분해하면?`, correct: `(x + ${a})(x + ${b})`, wrong: [`(x - ${a})(x - ${b})`, `(x + ${sum})(x + ${prod})`, `(x - ${sum})(x + 1)`], explain: `합이 ${sum}이고 곱이 ${prod}인 두 정수는 ${a}와 ${b}입니다.` };
+        },
+        () => {
+          const a = [2, 3, 4, 5, 6, 7, 8, 9][Math.floor(Math.random() * 8)];
+          const sq = a * a;
+          return { category: "인수분해: 합차 공식", q: `다항식 x² - ${sq} 를 인수분해하면?`, correct: `(x + ${a})(x - ${a})`, wrong: [`(x - ${a})²`, `(x + ${a})²`, `(x - ${sq})(x + 1)`], explain: `a² - b² = (a + b)(a - b) 공식을 적용하면 (x + ${a})(x - ${a}) 입니다.` };
+        },
+        () => {
+          const a = Math.floor(Math.random() * 7) + 2;
+          const mid = a * 2;
+          const sq = a * a;
+          return { category: "인수분해: 완전제곱식", q: `다항식 x² - ${mid}x + ${sq} 를 인수분해하면?`, correct: `(x - ${a})²`, wrong: [`(x + ${a})²`, `(x - ${mid})²`, `(x - ${a})(x + ${a})`], explain: `x² - 2ax + a² = (x - a)² 이므로 (x - ${a})² 입니다.` };
+        },
+        () => {
+          const a = Math.floor(Math.random() * 6) + 2;
+          const k = a * a;
+          return { category: "인수분해: 완전제곱 조건", q: `x² + ${a * 2}x + □ 가 완전제곱식이 되기 위한 네모 안의 수는?`, correct: `${k}`, wrong: [`${a * 2}`, `${a}`, `${k * 2}`], explain: `x의 계수의 절반(${a})의 제곱이 상수항이 되어야 하므로 (${a})² = ${k} 입니다.` };
+        },
+        () => {
+          const k = [2, 3, 4, 5][Math.floor(Math.random() * 4)];
+          const b = [2, 3, 5][Math.floor(Math.random() * 3)];
+          return { category: "인수분해: 공통인수", q: `다항식 ${k}x² + ${k * b}x 의 공통인수로 바르게 묶은 것은?`, correct: `${k}x(x + ${b})`, wrong: [`${k}(x + ${b})`, `x(x + ${k * b})`, `${k}x(x - ${b})`], explain: `공통인수 ${k}x로 묶어내면 ${k}x(x + ${b}) 입니다.` };
+        },
+        () => {
+          const a = Math.floor(Math.random() * 5) + 2;
+          return { category: "곱셈공식: (x+a)² 전개", q: `식 (x + ${a})² 을 전개한 것은?`, correct: `x² + ${2 * a}x + ${a * a}`, wrong: [`x² + ${a * a}`, `x² + ${a}x + ${a * a}`, `x² + ${2 * a}x + ${2 * a}`], explain: `(x + a)² = x² + 2ax + a² 이므로 x² + ${2 * a}x + ${a * a} 입니다.` };
+        },
+        () => {
+          const a = [2, 3][Math.floor(Math.random() * 2)];
+          const b = 1;
+          const c = 1;
+          const d = [2, 3][Math.floor(Math.random() * 2)];
+          const mid = a * d + b * c;
+          const constTerm = b * d;
+          return { category: "인수분해: ac형 교차곱", q: `${a}x² + ${mid}x + ${constTerm} 을 인수분해하면?`, correct: `(${a}x + ${b})(x + ${d})`, wrong: [`(${a}x - ${b})(x - ${d})`, `(x + ${b})(${a}x + ${d})`, `(${a}x + ${constTerm})(x + 1)`], explain: `대각선 교차곱을 이용하면 (${a}x + ${b})(x + ${d}) 입니다.` };
+        },
+
+        // 3. 이차방정식 (7종)
+        () => {
+          const r1 = Math.floor(Math.random() * 5) + 1;
+          const r2 = Math.floor(Math.random() * 5) + 1;
+          const sum = r1 + r2;
+          const prod = r1 * r2;
+          return { category: "이차방정식: 두 근의 합", q: `이차방정식 x² - ${sum}x + ${prod} = 0 의 두 근의 합은?`, correct: `${sum}`, wrong: [`-${sum}`, `${prod}`, `${sum + 2}`], explain: `근과 계수의 관계에 의해 두 근의 합은 -(-${sum})/1 = ${sum} 입니다.` };
+        },
+        () => {
+          const r1 = Math.floor(Math.random() * 5) + 1;
+          const r2 = Math.floor(Math.random() * 5) + 1;
+          const sum = r1 + r2;
+          const prod = r1 * r2;
+          return { category: "이차방정식: 두 근의 곱", q: `이차방정식 x² + ${sum}x + ${prod} = 0 의 두 근의 곱은?`, correct: `${prod}`, wrong: [`-${prod}`, `${sum}`, `-${sum}`], explain: `x² + bx + c = 0 에서 두 근의 곱은 상수항 c = ${prod} 입니다.` };
+        },
+        () => {
+          const a = [2, 3, 4, 5][Math.floor(Math.random() * 4)];
+          const p = Math.floor(Math.random() * 3) + 1;
+          const sq = a * a;
+          return { category: "이차방정식: 제곱근 풀이", q: `이차방정식 (x - ${p})² = ${sq} 의 양수인 해는?`, correct: `${a + p}`, wrong: [`${a}`, `${a - p}`, `${sq + p}`], explain: `x - ${p} = ±${a} 에서 x = ${p} ± ${a} 이므로 양수인 해는 ${p} + ${a} = ${a + p} 입니다.` };
+        },
+        () => {
+          const b = [4, 6, 8][Math.floor(Math.random() * 3)];
+          const c = [1, 2, 3][Math.floor(Math.random() * 3)];
+          const disc = b * b - 4 * c;
+          return { category: "이차방정식: 판별식 D", q: `이차방정식 x² + ${b}x + ${c} = 0 의 판별식 b² - 4ac 의 값은?`, correct: `${disc}`, wrong: [`${disc - 4}`, `${disc + 8}`, `${b * b}`], explain: `D = b² - 4ac = (${b})² - 4(1)(${c}) = ${b * b} - ${4 * c} = ${disc} 입니다.` };
+        },
+        () => {
+          const k = Math.floor(Math.random() * 5) + 2;
+          const cVal = k * k;
+          return { category: "이차방정식: 중근 조건", q: `x² - ${2 * k}x + k = 0 이 중근을 갖도록 하는 상수 k의 값은?`, correct: `${cVal}`, wrong: [`${k}`, `${2 * k}`, `${cVal * 2}`], explain: `D/4 = (-${k})² - k = 0 이어야 하므로 k = ${k}² = ${cVal} 입니다.` };
+        },
+        () => {
+          const r = Math.floor(Math.random() * 3) + 1;
+          const aVal = r * r + 2 * r;
+          return { category: "이차방정식: 근의 대입", q: `x² + 2x - a = 0 의 한 근이 x = ${r} 일 때, 상수 a의 값은?`, correct: `${aVal}`, wrong: [`${aVal - 2}`, `${aVal + 4}`, `${r * 2}`], explain: `x = ${r}을 대입하면 (${r})² + 2(${r}) - a = 0 이므로 a = ${aVal} 입니다.` };
+        },
+        () => {
+          return { category: "이차방정식: 근의 개수", q: `이차방정식 x² - 4x + 5 = 0 의 서로 다른 실근의 개수는?`, correct: `0개`, wrong: [`1개`, `2개`, `무수히 많다`], explain: `D = (-4)² - 4(1)(5) = 16 - 20 = -4 < 0 이므로 실근의 개수는 0개입니다.` };
+        },
+
+        // 4. 이차함수 (7종)
+        () => {
+          const p = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+          const q = (Math.floor(Math.random() * 7) + 1) * (Math.random() < 0.5 ? 1 : -1);
+          const pSign = p > 0 ? `- ${p}` : `+ ${Math.abs(p)}`;
+          const qSign = q > 0 ? `+ ${q}` : `- ${Math.abs(q)}`;
+          return { category: "이차함수: 꼭짓점 좌표", q: `이차함수 y = 2(x ${pSign})² ${qSign} 의 꼭짓점 좌표는?`, correct: `(${p}, ${q})`, wrong: [`(${-p}, ${q})`, `(${p}, ${-q})`, `(${-p}, ${-q})`], explain: `y = a(x - p)² + q 에서 꼭짓점은 (p, q) 입니다.` };
+        },
+        () => {
+          const p = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+          const pSign = p > 0 ? `- ${p}` : `+ ${Math.abs(p)}`;
+          return { category: "이차함수: 축의 방정식", q: `이차함수 y = -(x ${pSign})² + 3 의 축의 방정식은?`, correct: `x = ${p}`, wrong: [`x = ${-p}`, `y = 3`, `y = ${p}`], explain: `축의 방정식은 꼭짓점의 x좌표이므로 x = ${p} 입니다.` };
+        },
+        () => {
+          const q = Math.floor(Math.random() * 8) + 1;
+          return { category: "이차함수: y축 평행이동", q: `y = x² 의 그래프를 y축 방향으로 ${q}만큼 평행이동한 식은?`, correct: `y = x² + ${q}`, wrong: [`y = (x + ${q})²`, `y = (x - ${q})²`, `y = x² - ${q}`], explain: `y축 방향 평행이동은 식 뒤에 더하므로 y = x² + ${q} 입니다.` };
+        },
+        () => {
+          const q = Math.floor(Math.random() * 6) + 2;
+          return { category: "이차함수: 최댓값/최솟값", q: `이차함수 y = -(x - 3)² + ${q} 의 최댓값은?`, correct: `${q}`, wrong: [`3`, `-${q}`, `0`], explain: `위로 볼록인 포물선은 꼭짓점에서 최댓값 ${q}를 가집니다.` };
+        },
+        () => {
+          const c = Math.floor(Math.random() * 8) + 1;
+          return { category: "이차함수: y절편", q: `이차함수 y = 2x² - 5x + ${c} 의 그래프가 y축과 만나는 점의 y좌표는?`, correct: `${c}`, wrong: [`-${c}`, `2`, `-5`], explain: `y축과 만나는 점은 x = 0 일 때이므로 상수항인 ${c} 입니다.` };
+        },
+        () => {
+          return { category: "이차함수: 그래프 폭", q: `다음 중 포물선의 폭이 가장 좁은(홀쭉한) 식은?`, correct: `y = 5x²`, wrong: [`y = 2x²`, `y = -3x²`, `y = 1/2x²`], explain: `이차함수에서 |a|의 절댓값이 클수록 그래프의 폭이 좁아집니다.` };
+        },
+        () => {
+          return { category: "이차함수: 볼록 방향", q: `이차함수 y = -3(x - 1)² + 4 의 그래프 모양에 대한 설명으로 옳은 것은?`, correct: `위로 볼록하다`, wrong: [`아래로 볼록하다`, `직선이다`, `원점을 지난다`], explain: `x²항의 계수가 음수(-3)이면 그래프는 위로 볼록합니다.` };
+        },
+
+        // 5. 삼각비 (7종)
+        () => {
+          const items = [
+            { q: "sin 30° 의 값은?", c: "1/2", w: ["√2/2", "√3/2", "1"], exp: "sin 30° = 1/2 입니다." },
+            { q: "cos 60° 의 값은?", c: "1/2", w: ["√2/2", "√3/2", "0"], exp: "cos 60° = 1/2 입니다." },
+            { q: "tan 45° 의 값은?", c: "1", w: ["√3", "√3/3", "1/2"], exp: "tan 45° = 1 입니다." },
+            { q: "sin 60° 의 값은?", c: "√3/2", w: ["1/2", "√2/2", "√3"], exp: "sin 60° = √3/2 입니다." },
+            { q: "cos 30° 의 값은?", c: "√3/2", w: ["1/2", "√2/2", "1"], exp: "cos 30° = √3/2 입니다." },
+            { q: "tan 30° 의 값은?", c: "√3/3", w: ["√3", "1", "1/2"], exp: "tan 30° = √3/3 입니다." }
+          ];
+          const pick = items[Math.floor(Math.random() * items.length)];
+          return { category: "삼각비: 특수각 삼각비", q: pick.q, correct: pick.c, wrong: pick.w, explain: pick.exp };
+        },
+        () => {
+          return { category: "삼각비: 특수각 연산", q: `sin 30° + cos 60° 의 값은?`, correct: `1`, wrong: [`1/2`, `√3/2`, `√3`], explain: `1/2 + 1/2 = 1 입니다.` };
+        },
+        () => {
+          const hypot = [10, 12, 14, 20][Math.floor(Math.random() * 4)];
+          const height = hypot / 2;
+          return { category: "삼각비: 변의 길이", q: `직각삼각형에서 빗변이 ${hypot} 이고 한 각이 30° 일 때 높이는?`, correct: `${height}`, wrong: [`${hypot}`, `${Math.round(height * 1.73)}`, `${height - 2}`], explain: `높이 = 빗변 × sin 30° = ${hypot} × 1/2 = ${height} 입니다.` };
+        },
+        () => {
+          return { category: "삼각비: 정의", q: `세 변의 길이가 3, 4, 5인 직각삼각형에서 밑변이 4, 빗변이 5일 때 cos 값은?`, correct: `4/5`, wrong: [`3/5`, `3/4`, `5/4`], explain: `cos = 밑변 / 빗변 = 4/5 입니다.` };
+        },
+        () => {
+          return { category: "삼각비: 항등식", q: `(sin 30°)² + (cos 30°)² 의 계산 결과는?`, correct: `1`, wrong: [`1/2`, `3/4`, `2`], explain: `sin²θ + cos²θ = 1 이므로 (1/2)² + (√3/2)² = 1 입니다.` };
+        },
+        () => {
+          return { category: "삼각비: tan 특수각", q: `tan 60° × tan 30° 의 값은?`, correct: `1`, wrong: [`√3`, `3`, `1/3`], explain: `tan 60° = √3, tan 30° = 1/√3 이므로 √3 × (1/√3) = 1 입니다.` };
+        },
+        () => {
+          return { category: "삼각비: 삼각형 넓이", q: `두 변의 길이가 6, 8 이고 그 끼인각이 30° 인 삼각형의 넓이는?`, correct: `12`, wrong: [`24`, `16`, `12√3`], explain: `넓이 = 1/2 × 6 × 8 × sin 30° = 12 입니다.` };
+        },
+
+        // 6. 원의 성질 (7종)
+        () => {
+          const center = [60, 80, 100, 120, 140][Math.floor(Math.random() * 5)];
+          return { category: "원의 성질: 원주각의 크기", q: `한 호에 대한 중심각이 ${center}° 일 때, 원주각의 크기는?`, correct: `${center / 2}°`, wrong: [`${center}°`, `${center * 2}°`, `${center / 2 + 10}°`], explain: `원주각 = 중심각 ÷ 2 = ${center / 2}° 입니다.` };
+        },
+        () => {
+          return { category: "원의 성질: 지름과 원주각", q: `반원에 대한 원주각(지름을 한 변으로 하는 원주각)의 크기는?`, correct: `90°`, wrong: [`60°`, `45°`, `180°`], explain: `지름의 중심각이 180° 이므로 이에 대한 원주각은 항상 90° 입니다.` };
+        },
+        () => {
+          const ang = [70, 75, 80, 85, 95, 105][Math.floor(Math.random() * 6)];
+          const opp = 180 - ang;
+          return { category: "원의 성질: 내접 사각형", q: `원에 내접하는 사각형의 한 각이 ${ang}° 일 때, 마주보는 대각의 크기는?`, correct: `${opp}°`, wrong: [`${ang}°`, `${180 + ang}°`, `${90}°`], explain: `마주보는 두 대각의 합은 180° 입니다: 180° - ${ang}° = ${opp}°.` };
+        },
+        () => {
+          const ang = [35, 40, 45, 50, 55][Math.floor(Math.random() * 5)];
+          return { category: "원의 성질: 같은 호의 원주각", q: `같은 호에 대한 두 원주각 중 하나의 크기가 ${ang}° 일 때, 다른 원주각의 크기는?`, correct: `${ang}°`, wrong: [`${ang * 2}°`, `${180 - ang}°`, `${90}°`], explain: `한 원에서 같은 호에 대한 원주각의 크기는 모두 같습니다.` };
+        },
+        () => {
+          return { category: "원의 성질: 접선과 반지름", q: `원의 접선과 그 접점을 지나는 반지름이 이루는 각의 크기는?`, correct: `90°`, wrong: [`60°`, `45°`, `180°`], explain: `원의 접선은 접점을 지나는 반지름에 수직(90°)입니다.` };
+        },
+        () => {
+          const len = Math.floor(Math.random() * 8) + 5;
+          return { category: "원의 성질: 접선의 길이", q: `원 밖의 점 P에서 원에 그은 한 접선의 길이가 ${len}cm 일 때, 다른 접선의 길이는?`, correct: `${len}cm`, wrong: [`${len * 2}cm`, `${len / 2}cm`, `${len + 2}cm`], explain: `원 밖의 한 점에서 원에 그은 두 접선의 길이는 서로 같습니다.` };
+        },
+        () => {
+          return { category: "원의 성질: 현의 수직이등분선", q: `원의 중심에서 현에 내린 수선은 그 현을 어떻게 하는가?`, correct: `수직이등분한다`, wrong: [`삼등분한다`, `평행하게 만든다`, `길이를 2배로 만든다`], explain: `원의 중심에서 현에 내린 수선은 그 현을 이등분합니다.` };
+        },
+
+        // 7. 통계 (7종)
+        () => {
+          const mean = Math.floor(Math.random() * 6) + 5;
+          const diffs = [-3, -1, 0, 1, 3];
+          const data = diffs.map(d => mean + d).sort(() => Math.random() - 0.5);
+          return { category: "통계: 평균 구하기", q: `자료 [${data.join(', ')}] 의 평균값은?`, correct: `${mean}`, wrong: [`${mean - 1}`, `${mean + 1}`, `${mean + 2}`], explain: `자료의 총합을 개수 5로 나누면 평균은 ${mean} 입니다.` };
+        },
+        () => {
+          const raw = [2, 5, 7, 8, 11].sort(() => Math.random() - 0.5);
+          return { category: "통계: 중앙값", q: `자료 [${raw.join(', ')}] 의 중앙값은?`, correct: `7`, wrong: [`5`, `8`, `6.6`], explain: `크기순으로 나열했을 때 한가운데 위치한 값은 7 입니다.` };
+        },
+        () => {
+          const arr = [2, 4, 4, 7, 9].sort(() => Math.random() - 0.5);
+          return { category: "통계: 최빈값", q: `자료 [${arr.join(', ')}] 의 최빈값은?`, correct: `4`, wrong: [`2`, `7`, `9`], explain: `가장 많이 나타난 도수가 높은 값은 4(2회)입니다.` };
+        },
+        () => {
+          return { category: "통계: 편차의 성질", q: `어떤 변량들의 편차의 총합은 항상 얼마인가?`, correct: `0`, wrong: [`1`, `평균값`, `분산값`], explain: `편차(변량 - 평균)의 총합은 항상 0 입니다.` };
+        },
+        () => {
+          return { category: "통계: 분산의 정의", q: `분산(Variance)을 구하는 올바른 방법은?`, correct: `(편차)² 의 평균`, wrong: [`편차의 평균`, `변량들의 총합`, `(편차)² 의 총합`], explain: `분산은 각 편차의 제곱의 평균으로 구합니다.` };
+        },
+        () => {
+          const v = [4, 9, 16, 25][Math.floor(Math.random() * 4)];
+          const sd = Math.sqrt(v);
+          return { category: "통계: 표준편차", q: `어떤 자료의 분산이 ${v} 일 때, 표준편차는 얼마인가?`, correct: `${sd}`, wrong: [`${v * 2}`, `${v * v}`, `${sd * 2}`], explain: `표준편차는 분산의 양의 제곱근이므로 √${v} = ${sd} 입니다.` };
+        },
+        () => {
+          return { category: "통계: 상관관계", q: `x의 값이 증가함에 따라 y의 값도 대체로 증가하는 관계를 무엇이라 하는가?`, correct: `양의 상관관계`, wrong: [`음의 상관관계`, `상관관계가 없다`, `반비례 관계`], explain: `두 변량이 함께 증가하는 경향을 보일 때 '양의 상관관계'라 합니다.` };
+        }
+      ],
+
+      queue: [],
+      getRandomQuiz() {
+        if (this.queue.length === 0) {
+          this.queue = Array.from({ length: this.generators.length }, (_, i) => i).sort(() => Math.random() - 0.5);
+        }
+        const pickedIndex = this.queue.pop();
+        const gen = this.generators[pickedIndex];
+        const item = gen();
+        const choices = [item.correct, ...item.wrong].sort(() => Math.random() - 0.5);
+        return { category: item.category, q: item.q, choices, ans: item.correct, explain: item.explain };
+      }
+    };
+
+    let currentQuiz = null;
+    let quizLeft = 3;
+
+    function generateNextQuiz() {
+      if (quizLeft <= 0) {
+        document.getElementById('question-text').innerText = "이번 웨이브 준비 퀴즈를 모두 완료했습니다! 포탑을 설치하고 출격하세요.";
+        document.getElementById('choices-container').innerHTML = "";
+        return;
+      }
+      currentQuiz = QuestionEngine.getRandomQuiz();
+      document.getElementById('quiz-cat').innerText = currentQuiz.category;
+      document.getElementById('question-text').innerText = `Q. ${currentQuiz.q}`;
+      const choicesBox = document.getElementById('choices-container');
+      choicesBox.innerHTML = "";
+
+      currentQuiz.choices.forEach((c) => {
+        const btn = document.createElement('button');
+        btn.className = "choice-btn";
+        btn.innerText = c;
+        btn.onclick = () => submitAnswer(c);
+        choicesBox.appendChild(btn);
+      });
+      document.getElementById('val-quiz-left').innerText = quizLeft;
+    }
+
+    function submitAnswer(chosen) {
+      if (chosen === currentQuiz.ans) {
+        gold += 100;
+        saveUserGold();
+        currentUser.score += 100;
+        currentUser.solvedCount += 1;
+        showToast("🎉 정답입니다! +100G 획득", "var(--success)");
+        syncProgressToServer();
+      } else {
+        showExplainModal(currentQuiz.q, chosen, currentQuiz.ans, currentQuiz.explain);
+      }
+      quizLeft--;
+      updateUI();
+      generateNextQuiz();
+    }
+
+    function showExplainModal(q, userAns, ans, exp) {
+      const box = document.getElementById('explain-content');
+      box.innerHTML = `
+        <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:4px;">문제: ${q}</div>
+        <div style="color:var(--danger); margin-bottom:4px;">내가 고른 답: <b>${userAns}</b></div>
+        <div style="color:var(--success); margin-bottom:10px;">올바른 정답: <b>${ans}</b></div>
+        <div style="color:var(--accent); font-weight:bold; margin-top:8px;">💡 개념 콕 해설:</div>
+        <div style="color:#e2e8f0; margin-top:4px;">${exp}</div>
+      `;
+      document.getElementById('modal-explain').classList.remove('hidden');
+    }
+
+    function closeExplainModal() {
+      document.getElementById('modal-explain').classList.add('hidden');
+    }
+
+    /* ========================================================
+       3. 포탑 제원 & 업그레이드
+       ======================================================== */
+    const TOWER_SPECS = {
+      root: { cost: 100, range: 130, damage: 1.4, fireRate: 1, symbol: "√", color: "#38bdf8", name: "루트 빔", unlockStars: 0 },
+      factor: { cost: 140, range: 140, damage: 18, fireRate: 26, symbol: "(x)", color: "#22c55e", name: "인수분해포", unlockStars: 0 },
+      rational: { cost: 170, range: 160, damage: 32, fireRate: 42, symbol: "÷", color: "#3b82f6", name: "유리화포", unlockStars: 3 },
+      quadratic: { cost: 210, range: 190, damage: 55, fireRate: 68, symbol: "x²", color: "#facc15", name: "곡사포", splash: 75, unlockStars: 8 },
+      discr: { cost: 240, range: 170, damage: 45, fireRate: 52, symbol: "D", color: "#f97316", name: "판별 레이저", unlockStars: 15 },
+      trig: { cost: 270, range: 290, damage: 110, fireRate: 95, symbol: "sin", color: "#ec4899", name: "삼각 저격포", unlockStars: 24 },
+      tan: { cost: 300, range: 180, damage: 40, fireRate: 58, symbol: "tan", color: "#14b8a6", name: "기울기 캐논", knockback: 22, unlockStars: 33 },
+      circle: { cost: 330, range: 145, damage: 34, fireRate: 46, symbol: "○", color: "#06b6d4", name: "원주각 테슬라", unlockStars: 42 },
+      stat: { cost: 380, range: 210, damage: 75, fireRate: 82, symbol: "σ", color: "#a855f7", name: "통계 분산포", splash: 85, unlockStars: 52 }
+    };
+
+    let selectedTowerType = 'root';
+    let inspectedTower = null;
+
+    function updateTowerUnlockUI() {
+      const stars = currentUser.totalStars || 0;
+
+      const setBadge = (id, req) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (stars >= req) {
+          el.style.borderColor = "var(--gold)";
+          el.style.color = "var(--gold)";
+          el.style.background = "#1a2c48";
+        } else {
+          el.style.borderColor = "#334155";
+          el.style.color = "#94a3b8";
+          el.style.background = "#162238";
+        }
+      };
+
+      setBadge('badge-unlock-rational', 3);
+      setBadge('badge-unlock-quad', 8);
+      setBadge('badge-unlock-discr', 15);
+      setBadge('badge-unlock-trig', 24);
+      setBadge('badge-unlock-tan', 33);
+      setBadge('badge-unlock-circle', 42);
+      setBadge('badge-unlock-stat', 52);
+
+      for (const [key, spec] of Object.entries(TOWER_SPECS)) {
+        const card = document.getElementById(`card-${key}`);
+        const badge = document.getElementById(`lock-${key}`);
+        if (!card) continue;
+
+        const isLocked = stars < spec.unlockStars;
+        if (isLocked) {
+          card.classList.add('locked');
+          if (badge) badge.classList.remove('hidden');
+          if (selectedTowerType === key) {
+            selectTowerType('root');
+          }
+        } else {
+          card.classList.remove('locked');
+          if (badge) badge.classList.add('hidden');
+        }
+      }
+    }
+
+    function selectTowerType(type) {
+      const spec = TOWER_SPECS[type];
+      if (currentUser.totalStars < spec.unlockStars) {
+        showToast(`🔒 누적 별 ★ ${spec.unlockStars}개 달성 시 해금됩니다!`, "var(--danger)");
+        return;
+      }
+      selectedTowerType = type;
+      document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+      const activeCard = document.getElementById(`card-${type}`);
+      if (activeCard) activeCard.classList.add('selected');
+    }
+
+    /* ========================================================
+       4. 타워 디펜스 캔버스 엔진
+       ======================================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let gold = 300;
+    let currentWave = 1;
+    let leakCount = 0;
+    let waveActive = false;
+    let spawnFinished = false;
+
+    const mousePos = { x: -100, y: -100 };
+
+    const WAYPOINTS = [
+      { x: -30, y: 110 },
+      { x: 220, y: 110 },
+      { x: 220, y: 340 },
+      { x: 500, y: 340 },
+      { x: 500, y: 110 },
+      { x: 740, y: 110 },
+      { x: 740, y: 260 },
+      { x: 930, y: 260 }
+    ];
+
+    const SLOTS = [
+      { id: 1, x: 100, y: 50, tower: null },
+      { id: 2, x: 100, y: 175, tower: null },
+      { id: 3, x: 155, y: 235, tower: null },
+      { id: 4, x: 285, y: 215, tower: null },
+      { id: 5, x: 285, y: 400, tower: null },
+      { id: 6, x: 420, y: 400, tower: null },
+      { id: 7, x: 425, y: 255, tower: null },
+      { id: 8, x: 440, y: 50, tower: null },
+      { id: 9, x: 565, y: 50, tower: null },
+      { id: 10, x: 565, y: 195, tower: null },
+      { id: 11, x: 670, y: 50, tower: null },
+      { id: 12, x: 670, y: 320, tower: null },
+      { id: 13, x: 805, y: 185, tower: null },
+      { id: 14, x: 805, y: 335, tower: null }
+    ];
+
+    let towers = [];
+    let enemies = [];
+    let projectiles = [];
+    let particles = [];
+
+    function spawnExplosion(x, y, color, count = 12) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 3 + 1;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          color,
+          life: 1.0,
+          decay: Math.random() * 0.05 + 0.03,
+          size: Math.random() * 3 + 1.5
+        });
+      }
+    }
+
+    class Enemy {
+      constructor(type, wave) {
+        this.wpIndex = 0;
+        this.x = WAYPOINTS[0].x;
+        this.y = WAYPOINTS[0].y;
+        this.type = type;
+        this.baseSpeed = 0.98;
+        this.speed = this.baseSpeed;
+        this.maxHp = (110 + wave * 65) * (1 + (wave - 1) * 0.12);
+        this.radius = 15;
+        this.color = "#ef4444";
+        this.label = "";
+        this.hitFlash = 0;
+        this.animTick = Math.random() * 100;
+        this.shield = 0;
+
+        if (type === 'golem') {
+          this.maxHp *= 3.0;
+          this.baseSpeed = 0.65;
+          this.radius = 20;
+          this.color = "#f97316";
+          this.label = "x²-a²";
+        } else if (type === 'slime') {
+          this.maxHp *= 0.85;
+          this.baseSpeed = 1.3;
+          this.radius = 13;
+          this.color = "#10b981";
+          this.label = "(x+a)";
+        } else if (type === 'fast') {
+          this.baseSpeed = 1.75;
+          this.maxHp *= 0.9;
+          this.radius = 13;
+          this.color = "#a855f7";
+          this.label = "30°";
+        } else if (type === 'regen') {
+          this.baseSpeed = 0.92;
+          this.maxHp *= 1.6;
+          this.radius = 16;
+          this.color = "#06b6d4";
+          this.label = "√p";
+        } else if (type === 'rusher') {
+          this.baseSpeed = 1.15;
+          this.maxHp *= 1.35;
+          this.radius = 14;
+          this.color = "#f43f5e";
+          this.label = "Δv";
+        } else if (type === 'shield') {
+          this.baseSpeed = 0.85;
+          this.maxHp *= 2.0;
+          this.radius = 18;
+          this.shield = this.maxHp * 0.65;
+          this.color = "#3b82f6";
+          this.label = "⊙";
+        } else if (type === 'swarm') {
+          this.baseSpeed = 1.35;
+          this.maxHp *= 0.55;
+          this.radius = 11;
+          this.color = "#eab308";
+          this.label = "σ";
+        } else {
+          this.label = "k";
+        }
+
+        this.speed = this.baseSpeed;
+        this.hp = this.maxHp;
+      }
+
+      update() {
+        this.animTick += 0.1;
+        if (this.hitFlash > 0) this.hitFlash--;
+
+        if (this.type === 'regen' && this.hp < this.maxHp) {
+          this.hp = Math.min(this.maxHp, this.hp + 0.35);
+        }
+
+        if (this.type === 'rusher') {
+          this.speed = Math.min(2.5, this.speed + 0.0035);
+        }
+
+        const target = WAYPOINTS[this.wpIndex + 1];
+        if (!target) return true;
+
+        const dx = target.x - this.x;
+        const dy = target.y - this.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < this.speed) {
+          this.x = target.x;
+          this.y = target.y;
+          this.wpIndex++;
+        } else {
+          this.x += (dx / dist) * this.speed;
+          this.y += (dy / dist) * this.speed;
+        }
+
+        this.speed = Math.min(this.baseSpeed, this.speed + 0.004);
+        return false;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.fillStyle = this.hitFlash > 0 ? "#ffffff" : this.color;
+
+        if (this.type === 'golem') {
+          ctx.save();
+          ctx.rotate(this.animTick * 0.4);
+          ctx.fillRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
+          ctx.strokeStyle = "#fed7aa";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
+          ctx.restore();
+        } else if (this.type === 'slime') {
+          const bounce = Math.sin(this.animTick * 3) * 3;
+          ctx.beginPath();
+          ctx.ellipse(0, bounce, this.radius + bounce*0.5, this.radius - bounce*0.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#a7f3d0";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        } else if (this.type === 'fast' || this.type === 'rusher') {
+          const nextWp = WAYPOINTS[this.wpIndex + 1] || { x: this.x + 1, y: this.y };
+          const angle = Math.atan2(nextWp.y - this.y, nextWp.x - this.x);
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(this.radius * 1.3, 0);
+          ctx.lineTo(-this.radius, -this.radius * 0.7);
+          ctx.lineTo(-this.radius * 0.4, 0);
+          ctx.lineTo(-this.radius, this.radius * 0.7);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fecaca";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        if (this.shield > 0) {
+          ctx.strokeStyle = "rgba(56, 189, 248, 0.7)";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, this.radius + 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 9px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.label, 0, 0);
+
+        const barW = 26;
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(-barW/2, -this.radius - 9, barW, 4);
+        ctx.fillStyle = this.hp > this.maxHp * 0.3 ? "#22c55e" : "#ef4444";
+        ctx.fillRect(-barW/2, -this.radius - 9, barW * (Math.max(0, this.hp) / this.maxHp), 4);
+
+        ctx.restore();
+      }
+    }
+
+    class Projectile {
+      constructor(startX, startY, target, spec, towerLevel = 1) {
+        this.startX = startX;
+        this.startY = startY;
+        this.x = startX;
+        this.y = startY;
+        this.target = target;
+        this.spec = spec;
+        this.towerLevel = towerLevel;
+        this.speed = spec.symbol === "sin" ? 14 : 8.0;
+        this.arrived = false;
+        this.progress = 0;
+        this.renderY = startY;
+      }
+
+      update() {
+        if (!this.target || this.target.hp <= 0) {
+          this.arrived = true;
+          return;
+        }
+
+        if (this.spec.symbol === "x²") {
+          this.progress += 0.035;
+          this.x = this.startX + (this.target.x - this.startX) * this.progress;
+          this.y = this.startY + (this.target.y - this.startY) * this.progress;
+          const arc = Math.sin(this.progress * Math.PI) * 55;
+          this.renderY = this.y - arc;
+
+          if (Math.random() < 0.6) {
+            particles.push({
+              x: this.x, y: this.renderY,
+              vx: (Math.random() - 0.5) * 0.8,
+              vy: (Math.random() - 0.5) * 0.8,
+              life: 0.6, decay: 0.05,
+              color: "#fde047", size: 3
+            });
+          }
+
+          if (this.progress >= 1.0) {
+            this.arrived = true;
+            this.hitTarget();
+          }
+          return;
+        }
+
+        const dx = this.target.x - this.x;
+        const dy = this.target.y - this.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < this.speed) {
+          this.arrived = true;
+          this.hitTarget();
+        } else {
+          this.x += (dx / dist) * this.speed;
+          this.y += (dy / dist) * this.speed;
+          this.renderY = this.y;
+        }
+      }
+
+      hitTarget() {
+        const lvlMultiplier = this.towerLevel === 3 ? 2.3 : (this.towerLevel === 2 ? 1.55 : 1.0);
+        let dmg = this.spec.damage * lvlMultiplier;
+
+        if (this.spec.symbol === "√" && this.target.type === "golem") dmg *= 2.0;
+        if (this.spec.symbol === "(x)" && this.target.type === "slime") dmg *= 1.8;
+        if (this.spec.symbol === "÷" && this.target.type === "golem") dmg *= 2.5;
+        if (this.spec.symbol === "sin" && (this.target.type === "fast" || this.target.type === "rusher")) dmg *= 2.5;
+
+        if (this.spec.symbol === "D") {
+          const ratio = this.target.hp / this.target.maxHp;
+          dmg *= (1.0 + ratio * 1.8);
+        }
+
+        if (this.spec.knockback) {
+          const kbDist = this.spec.knockback * (1 + (this.towerLevel - 1) * 0.4);
+          this.target.x = Math.max(WAYPOINTS[0].x, this.target.x - kbDist);
+          this.target.speed = Math.max(0.2, this.target.speed * 0.6);
+        }
+
+        if (this.spec.symbol === "σ") {
+          const crowd = enemies.filter(e => Math.hypot(e.x - this.x, e.y - this.y) <= 85).length;
+          dmg *= (1 + crowd * 0.4);
+        }
+
+        if (this.target.shield > 0) {
+          this.target.shield -= dmg;
+          if (this.target.shield < 0) {
+            this.target.hp += this.target.shield;
+            this.target.shield = 0;
+          }
+        } else {
+          this.target.hp -= dmg;
+        }
+
+        if (this.spec.splash) {
+          const splashRange = this.spec.splash * (1 + (this.towerLevel - 1) * 0.2);
+          enemies.forEach(e => {
+            if (Math.hypot(e.x - this.x, e.y - this.y) <= splashRange) {
+              e.hp -= dmg * 0.75;
+              e.hitFlash = 3;
+            }
+          });
+          spawnExplosion(this.x, this.renderY || this.y, this.spec.color, 18);
+        } else {
+          this.target.hitFlash = 4;
+          spawnExplosion(this.x, this.renderY || this.y, this.spec.color, 8);
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.fillStyle = this.spec.color;
+        ctx.shadowColor = this.spec.color;
+        ctx.shadowBlur = 8;
+        ctx.font = `bold ${this.towerLevel > 1 ? 14 : 12}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.spec.symbol, this.x, this.renderY || this.y);
+        ctx.restore();
+      }
+    }
+
+    class Tower {
+      constructor(slot, type) {
+        this.slot = slot;
+        this.type = type;
+        this.spec = TOWER_SPECS[type];
+        this.level = 1;
+        this.totalInvested = this.spec.cost;
+        this.x = slot.x;
+        this.y = slot.y;
+        this.cooldown = 0;
+        this.angle = 0;
+        this.recoil = 0;
+        this.beamTarget = null;
+      }
+
+      get effectiveRange() {
+        return this.spec.range * (1 + (this.level - 1) * 0.15);
+      }
+
+      get effectiveDamage() {
+        return this.spec.damage * (this.level === 3 ? 2.3 : (this.level === 2 ? 1.55 : 1.0));
+      }
+
+      get effectiveFireRate() {
+        return Math.max(1, Math.round(this.spec.fireRate * (this.level === 3 ? 0.75 : (this.level === 2 ? 0.85 : 1.0))));
+      }
+
+      get upgradeCost() {
+        if (this.level >= 3) return 0;
+        return Math.round(this.spec.cost * (this.level === 1 ? 0.85 : 1.35));
+      }
+
+      get sellRefund() {
+        return Math.round(this.totalInvested * 0.7);
+      }
+
+      upgrade() {
+        if (this.level >= 3) return false;
+        const cost = this.upgradeCost;
+        if (gold >= cost) {
+          gold -= cost;
+          saveUserGold();
+          this.totalInvested += cost;
+          this.level++;
+          spawnExplosion(this.x, this.y, "var(--gold)", 24);
+          showToast(`✨ ${this.spec.name} 포탑이 Lv.${this.level}로 강화되었습니다!`, "var(--gold)");
+          saveUserTowers();
+          syncProgressToServer();
+          updateUI();
+          return true;
+        } else {
+          showToast("⚠️ 강화 골드가 부족합니다!", "var(--danger)");
+          return false;
+        }
+      }
+
+      update() {
+        if (this.cooldown > 0) this.cooldown--;
+        if (this.recoil > 0) this.recoil -= 0.5;
+
+        let target = null;
+        let minDist = this.effectiveRange;
+
+        for (let e of enemies) {
+          const d = Math.hypot(e.x - this.x, e.y - this.y);
+          if (d <= minDist) {
+            target = e;
+            minDist = d;
+          }
+        }
+
+        if (target) {
+          this.angle = Math.atan2(target.y - this.y, target.x - this.x);
+        }
+
+        if (this.type === 'root') {
+          this.beamTarget = target;
+          if (target) {
+            target.hp -= this.effectiveDamage;
+            target.speed = Math.max(0.35, target.speed * 0.95);
+            target.hitFlash = 1;
+            if (Math.random() < 0.25) {
+              spawnExplosion(target.x, target.y, this.spec.color, 2);
+            }
+          }
+        } else if (this.type === 'circle') {
+          if (this.cooldown <= 0) {
+            let hitAny = false;
+            enemies.forEach(e => {
+              if (Math.hypot(e.x - this.x, e.y - this.y) <= this.effectiveRange) {
+                e.hp -= this.effectiveDamage;
+                e.shield = Math.max(0, e.shield - this.effectiveDamage * 2.5);
+                e.hitFlash = 3;
+                e.speed = Math.max(0.35, e.speed * 0.85);
+                spawnExplosion(e.x, e.y, this.spec.color, 3);
+                hitAny = true;
+              }
+            });
+            if (hitAny) {
+              this.cooldown = this.effectiveFireRate;
+              this.recoil = 5;
+            }
+          }
+        } else {
+          if (target && this.cooldown <= 0) {
+            projectiles.push(new Projectile(this.x, this.y, target, this.spec, this.level));
+            this.cooldown = this.effectiveFireRate;
+            this.recoil = 4;
+          }
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        if (inspectedTower === this) {
+          ctx.strokeStyle = "var(--gold)";
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(0, 0, 24, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        ctx.fillStyle = this.level === 3 ? "#2a1b4e" : (this.level === 2 ? "#1e3a5f" : "#1e293b");
+        ctx.strokeStyle = this.level === 3 ? "var(--purple)" : (this.level === 2 ? "var(--gold)" : this.spec.color);
+        ctx.lineWidth = this.level > 1 ? 3 : 2.5;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (i * Math.PI) / 3;
+          const px = Math.cos(a) * (18 + this.level * 1.5);
+          const py = Math.sin(a) * (18 + this.level * 1.5);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.rotate(this.angle);
+        ctx.fillStyle = "#0f172a";
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 2;
+
+        if (this.type === 'factor') {
+          ctx.fillRect(8 - this.recoil, -6, 14, 4);
+          ctx.fillRect(8 - this.recoil, 2, 14, 4);
+        } else if (this.type === 'trig') {
+          ctx.fillRect(10 - this.recoil, -3, 24, 6);
+          ctx.strokeStyle = this.spec.color;
+          ctx.strokeRect(10 - this.recoil, -3, 24, 6);
+        } else if (this.type === 'quadratic') {
+          ctx.fillRect(6 - this.recoil, -6, 18, 12);
+        } else if (this.type === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, 15, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (this.type === 'stat') {
+          ctx.fillRect(7 - this.recoil, -6, 18, 12);
+        } else {
+          ctx.fillRect(6 - this.recoil, -4, 12, 8);
+        }
+
+        ctx.rotate(-this.angle);
+        ctx.fillStyle = "#090d16";
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = this.spec.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = this.spec.color;
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.spec.symbol, 0, 1);
+
+        if (this.level > 1) {
+          ctx.fillStyle = "var(--gold)";
+          ctx.font = "bold 10px sans-serif";
+          ctx.fillText(this.level === 3 ? "★★★" : "★★", 0, -17);
+        }
+
+        ctx.restore();
+
+        if (this.type === 'root' && this.beamTarget && this.beamTarget.hp > 0) {
+          ctx.save();
+          ctx.strokeStyle = this.level === 3 ? "rgba(168, 85, 247, 0.9)" : "rgba(56, 189, 248, 0.85)";
+          ctx.lineWidth = (3 + this.level) + Math.sin(Date.now() * 0.02) * 1.5;
+          ctx.shadowColor = this.spec.color;
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(this.beamTarget.x, this.beamTarget.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+
+    function openTowerInspector(tower) {
+      inspectedTower = tower;
+      const modal = document.getElementById('tower-inspector-modal');
+      modal.classList.remove('hidden');
+
+      document.getElementById('insp-name').innerText = tower.spec.name;
+      document.getElementById('insp-level').innerText = `Lv.${tower.level}` + (tower.level >= 3 ? " (MAX)" : "");
+      document.getElementById('insp-dmg').innerText = `공격력: ${Math.round(tower.effectiveDamage)}`;
+      document.getElementById('insp-range').innerText = `사거리: ${Math.round(tower.effectiveRange)}`;
+      document.getElementById('insp-rate').innerText = `연사 딜레이: ${(tower.effectiveFireRate * 0.016).toFixed(2)}s`;
+
+      const upBtn = document.getElementById('btn-insp-upgrade');
+      if (tower.level >= 3) {
+        upBtn.innerText = "최대 레벨 (MAX)";
+        upBtn.disabled = true;
+      } else {
+        upBtn.innerText = `강화 (${tower.upgradeCost}G)`;
+        upBtn.disabled = false;
+      }
+
+      document.getElementById('btn-insp-sell').innerText = `철거 (+${tower.sellRefund}G)`;
+    }
+
+    function closeTowerInspector() {
+      inspectedTower = null;
+      document.getElementById('tower-inspector-modal').classList.add('hidden');
+    }
+
+    function upgradeSelectedTower() {
+      if (!inspectedTower) return;
+      const ok = inspectedTower.upgrade();
+      if (ok) openTowerInspector(inspectedTower);
+    }
+
+    function sellSelectedTower() {
+      if (!inspectedTower) return;
+      const refund = inspectedTower.sellRefund;
+      gold += refund;
+      saveUserGold();
+      spawnExplosion(inspectedTower.x, inspectedTower.y, "var(--danger)", 18);
+      
+      inspectedTower.slot.tower = null;
+      towers = towers.filter(t => t !== inspectedTower);
+      showToast(`🗑 ${inspectedTower.spec.name} 포탑을 철거하고 ${refund}G를 회수했습니다.`);
+      closeTowerInspector();
+      saveUserTowers();
+      syncProgressToServer();
+      updateUI();
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mousePos.x = e.clientX - rect.left;
+      mousePos.y = e.clientY - rect.top;
+    });
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      let clickedAny = false;
+      SLOTS.forEach(slot => {
+        if (Math.hypot(slot.x - mx, slot.y - my) <= 24) {
+          clickedAny = true;
+          if (slot.tower) {
+            openTowerInspector(slot.tower);
+          } else {
+            closeTowerInspector();
+            const spec = TOWER_SPECS[selectedTowerType];
+            if (currentUser.totalStars < spec.unlockStars) {
+              showToast(`🔒 누적 별 ★ ${spec.unlockStars}개 달성 시 해금됩니다!`, "var(--danger)");
+              return;
+            }
+            if (gold >= spec.cost) {
+              gold -= spec.cost;
+              saveUserGold();
+              const t = new Tower(slot, selectedTowerType);
+              slot.tower = t;
+              towers.push(t);
+              spawnExplosion(slot.x, slot.y, spec.color, 16);
+              openTowerInspector(t);
+              saveUserTowers();
+              syncProgressToServer();
+              updateUI();
+            } else {
+              showToast("⚠️ 골드가 부족합니다! 수학 퀴즈를 풀어보세요.", "var(--danger)");
+            }
+          }
+        }
+      });
+
+      if (!clickedAny) {
+        closeTowerInspector();
+      }
+    });
+
+    let spawnTimer = null;
+    function startWave() {
+      if (waveActive) return;
+      waveActive = true;
+      spawnFinished = false;
+      leakCount = 0;
+      closeTowerInspector();
+      updateUI();
+      document.getElementById('btn-start-wave').disabled = true;
+
+      const totalEnemies = 9 + currentWave * 3;
+      let spawned = 0;
+
+      function spawnEnemy() {
+        const r = Math.random();
+        let type = 'normal';
+
+        if (currentWave >= 17) {
+          if (r < 0.28) type = 'swarm';
+          else if (r < 0.48) type = 'shield';
+          else if (r < 0.68) type = 'rusher';
+          else if (r < 0.82) type = 'golem';
+          else type = 'fast';
+        } else if (currentWave >= 13) {
+          if (r < 0.3) type = 'shield';
+          else if (r < 0.5) type = 'rusher';
+          else if (r < 0.7) type = 'regen';
+          else if (r < 0.85) type = 'golem';
+          else type = 'fast';
+        } else if (currentWave >= 9) {
+          if (r < 0.35) type = 'rusher';
+          else if (r < 0.55) type = 'regen';
+          else if (r < 0.75) type = 'golem';
+          else if (r < 0.88) type = 'slime';
+          else type = 'fast';
+        } else if (currentWave >= 5) {
+          if (r < 0.3) type = 'regen';
+          else if (r < 0.55) type = 'golem';
+          else if (r < 0.75) type = 'slime';
+          else type = 'fast';
+        } else {
+          if (r < 0.32) type = 'golem';
+          else if (r < 0.58) type = 'slime';
+          else if (r < 0.82) type = 'fast';
+          else type = 'normal';
+        }
+
+        enemies.push(new Enemy(type, currentWave));
+      }
+
+      spawnEnemy();
+      spawned++;
+
+      spawnTimer = setInterval(() => {
+        if (spawned >= totalEnemies) {
+          clearInterval(spawnTimer);
+          spawnTimer = null;
+          spawnFinished = true;
+          return;
+        }
+        spawnEnemy();
+        spawned++;
+      }, Math.max(550, 950 - currentWave * 12));
+    }
+
+    function gameLoop() {
+      ctx.fillStyle = "#070b14";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "rgba(30, 41, 59, 0.35)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#172338";
+      ctx.lineWidth = 42;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(WAYPOINTS[0].x, WAYPOINTS[0].y);
+      for (let i = 1; i < WAYPOINTS.length; i++) ctx.lineTo(WAYPOINTS[i].x, WAYPOINTS[i].y);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(890, 225, 10, 70);
+      ctx.fillStyle = "rgba(239, 68, 68, 0.2)";
+      ctx.fillRect(875, 220, 25, 80);
+
+      SLOTS.forEach(slot => {
+        const isHovered = Math.hypot(slot.x - mousePos.x, slot.y - mousePos.y) <= 22;
+
+        if (!slot.tower) {
+          ctx.strokeStyle = isHovered ? "var(--accent)" : "rgba(56, 189, 248, 0.35)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(slot.x, slot.y, 18, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          if (isHovered) {
+            ctx.fillStyle = "rgba(56, 189, 248, 0.08)";
+            ctx.beginPath();
+            ctx.arc(slot.x, slot.y, TOWER_SPECS[selectedTowerType].range, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+            ctx.stroke();
+          }
+        } else if (inspectedTower === slot.tower) {
+          ctx.fillStyle = "rgba(250, 204, 21, 0.06)";
+          ctx.beginPath();
+          ctx.arc(slot.x, slot.y, slot.tower.effectiveRange, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(250, 204, 21, 0.45)";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      });
+
+      towers.forEach(t => {
+        t.update();
+        t.draw();
+      });
+
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        p.update();
+        p.draw();
+        if (p.arrived) projectiles.splice(i, 1);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.life -= pt.decay;
+        if (pt.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = pt.color;
+        ctx.globalAlpha = pt.life;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        const leaked = e.update();
+        if (leaked) {
+          leakCount++;
+          enemies.splice(i, 1);
+          updateUI();
+          if (leakCount >= 3) {
+            endWave(false);
+            break;
+          }
+          continue;
+        }
+
+        if (e.hp <= 0) {
+          gold += 15;
+          currentUser.score += 25;
+          spawnExplosion(e.x, e.y, e.color, 16);
+          enemies.splice(i, 1);
+          updateUI();
+          continue;
+        }
+
+        e.draw();
+      }
+
+      if (waveActive && spawnFinished && enemies.length === 0) {
+        endWave(true);
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function endWave(isSuccess) {
+      waveActive = false;
+      spawnFinished = false;
+      if (spawnTimer) {
+        clearInterval(spawnTimer);
+        spawnTimer = null;
+      }
+      enemies = [];
+      projectiles = [];
+
+      const modal = document.getElementById('modal-result');
+      const title = document.getElementById('result-title');
+      const stars = document.getElementById('result-stars');
+      const desc = document.getElementById('result-desc');
+      const nextBtn = document.getElementById('btn-next-action');
+
+      modal.classList.remove('hidden');
+
+      const PRAISE_LIST = [
+        "🌟 피타고라스도 감탄할 만한 완벽한 기지 배치였습니다!",
+        "📐 이차함수 포물선처럼 깔끔하게 적을 제압한 멋진 승리!",
+        "💡 복잡한 인수분해도 단숨에 풀어내는 뛰어난 통찰력!",
+        "⚡ 판별식 D > 0 ! 두 실근처럼 확실하고 명쾌한 수비였습니다!",
+        "🎯 삼각비의 날카로운 각도로 성벽을 완벽하게 사수했습니다!",
+        "👑 오일러의 후예다운 눈부신 수학적 전술과 판단력!",
+        "🛡️ 원주각의 굳건한 성질처럼 뚫리지 않는 철벽 방어!",
+        "📊 통계 분산을 꿰뚫어 본 것처럼 안정적인 디펜스였습니다!"
+      ];
+      const randomPraise = PRAISE_LIST[Math.floor(Math.random() * PRAISE_LIST.length)];
+
+      if (isSuccess) {
+        let earnedStars = 1;
+        if (leakCount === 0) earnedStars = 3;
+        else if (leakCount === 1) earnedStars = 2;
+
+        gold += 100;
+        saveUserGold();
+
+        const prevStars = stageStars[currentWave] || 0;
+        let starGain = 0;
+        if (earnedStars > prevStars) {
+          starGain = earnedStars - prevStars;
+          stageStars[currentWave] = earnedStars;
+          saveStageStars();
+        }
+
+        recalculateTotalStars();
+        currentUser.score += earnedStars * 500;
+        currentUser.maxWave = Math.max(currentUser.maxWave, currentWave + 1);
+
+        title.innerText = `웨이브 ${currentWave} 방어 성공!`;
+        stars.innerText = "★".repeat(earnedStars) + "☆".repeat(3 - earnedStars);
+        desc.innerText = `${randomPraise}\n\n성벽 통과 몬스터: ${leakCount}마리\n획득 별점: ${earnedStars}개${starGain > 0 ? ` (누적 별 +${starGain}개 갱신!)` : ' (최고 기록 유지)'}\n클리어 승리 보너스: +100G 획득!\n현재 보유 골드: ${gold}G`;
+        nextBtn.innerText = "다음 웨이브 준비";
+        nextBtn.onclick = () => {
+          modal.classList.add('hidden');
+          currentWave++;
+          prepareNextWave();
+        };
+        syncProgressToServer();
+      } else {
+        title.innerText = `웨이브 ${currentWave} 방어 실패!`;
+        stars.innerText = "☆☆☆";
+        desc.innerText = `몬스터 3마리가 성벽을 통과했습니다!\n상단 [📖 상성 도감]을 확인하고 포탑을 보강해 재도전하세요.\n(현재 잔여 골드: ${gold}G)`;
+        nextBtn.innerText = "웨이브 재도전";
+        nextBtn.onclick = () => {
+          modal.classList.add('hidden');
+          prepareNextWave();
+        };
+      }
+      updateUI();
+    }
+
+    function prepareNextWave() {
+      document.getElementById('btn-start-wave').disabled = false;
+      quizLeft = 3;
+      generateNextQuiz();
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('val-gold').innerText = gold;
+      document.getElementById('val-wave').innerText = currentWave;
+      document.getElementById('val-leaks').innerText = leakCount;
+      document.getElementById('val-stars').innerText = currentUser.totalStars;
+    }
+
+    /* ========================================================
+       5. 로비 네비게이션
+       ======================================================== */
+    function showLobby() {
+      document.getElementById('stage-select-view').classList.remove('hidden');
+      document.getElementById('game-play-view').classList.add('hidden');
+      document.getElementById('btn-exit-wave').classList.add('hidden');
+      document.getElementById('stat-gold-wrap').classList.add('hidden');
+      document.getElementById('stat-wave-wrap').classList.add('hidden');
+      document.getElementById('stat-leaks-wrap').classList.add('hidden');
+
+      document.getElementById('lobby-total-stars').innerText = currentUser.totalStars;
+      document.getElementById('val-stars').innerText = currentUser.totalStars;
+      renderStageSelectGrid();
+      updateTowerUnlockUI();
+    }
+
+    function renderStageSelectGrid() {
+      const container = document.getElementById('stage-grid-container');
+      container.innerHTML = "";
+
+      for (let i = 1; i <= TOTAL_STAGES; i++) {
+        const isUnlocked = i <= currentUser.maxWave;
+        const starsEarned = stageStars[i] || 0;
+        const card = document.createElement('div');
+        card.className = `stage-card ${isUnlocked ? '' : 'locked'}`;
+
+        let starDisplay = "☆☆☆";
+        if (starsEarned === 3) starDisplay = "★★★";
+        else if (starsEarned === 2) starDisplay = "★★☆";
+        else if (starsEarned === 1) starDisplay = "★☆☆";
+
+        card.innerHTML = `
+          <div style="font-size: 1rem; font-weight: bold; color: ${isUnlocked ? 'var(--accent)' : '#64748b'};">웨이브 ${i}</div>
+          <div style="font-size: 0.95rem; color: var(--gold); margin: 6px 0;">${isUnlocked ? starDisplay : '🔒'}</div>
+          <div style="font-size: 0.72rem; color: #94a3b8;">${isUnlocked ? (starsEarned > 0 ? '클리어 완료' : '도전 가능') : '잠김'}</div>
+        `;
+
+        if (isUnlocked) {
+          card.onclick = () => enterStage(i);
+        } else {
+          card.onclick = () => showToast(`웨이브 ${i - 1}을 먼저 클리어해야 도전할 수 있습니다.`, "var(--danger)");
+        }
+        container.appendChild(card);
+      }
+
+      const endlessCard = document.createElement('div');
+      const isEndlessUnlocked = currentUser.totalStars >= 60;
+      endlessCard.className = `stage-card ${isEndlessUnlocked ? '' : 'locked'}`;
+      endlessCard.style.border = isEndlessUnlocked ? "2px solid var(--purple)" : "2px dashed #475569";
+      endlessCard.style.background = isEndlessUnlocked ? "linear-gradient(145deg, #1e1138, #0a1120)" : "#070b14";
+
+      endlessCard.innerHTML = `
+        <div style="font-size: 1.05rem; font-weight: bold; color: ${isEndlessUnlocked ? 'var(--purple)' : '#64748b'};">👑 무한 웨이브</div>
+        <div style="font-size: 0.85rem; color: var(--gold); margin: 6px 0;">${isEndlessUnlocked ? '★ 무한 랭킹전 ★' : '🔒 별 60개 필요'}</div>
+        <div style="font-size: 0.72rem; color: #94a3b8;">${isEndlessUnlocked ? '한계 돌파 도전!' : `(현재: ${currentUser.totalStars}/60★)`}</div>
+      `;
+
+      if (isEndlessUnlocked) {
+        endlessCard.onclick = () => enterStage(21);
+      } else {
+        endlessCard.onclick = () => showToast("1~20웨이브에서 별 3개씩 총 60개를 모아야 무한 모드가 해금됩니다!", "var(--danger)");
+      }
+      container.appendChild(endlessCard);
+    }
+
+    function enterStage(waveNum) {
+      currentWave = waveNum;
+      document.getElementById('stage-select-view').classList.add('hidden');
+      document.getElementById('game-play-view').classList.remove('hidden');
+      document.getElementById('btn-exit-wave').classList.remove('hidden');
+      document.getElementById('stat-gold-wrap').classList.remove('hidden');
+      document.getElementById('stat-wave-wrap').classList.remove('hidden');
+      document.getElementById('stat-leaks-wrap').classList.remove('hidden');
+
+      if (gold < 50) {
+        gold = 50;
+      }
+      saveUserGold();
+
+      leakCount = 0;
+      waveActive = false;
+      spawnFinished = false;
+      enemies = [];
+      projectiles = [];
+      closeTowerInspector();
+
+      updateTowerUnlockUI();
+      prepareNextWave();
+      updateUI();
+      showToast(`웨이브 ${currentWave} 진입! (보유 골드: ${gold}G 유지)`);
+    }
+
+    function exitToLobby() {
+      waveActive = false;
+      spawnFinished = false;
+      if (spawnTimer) {
+        clearInterval(spawnTimer);
+        spawnTimer = null;
+      }
+      enemies = [];
+      projectiles = [];
+      closeTowerInspector();
+      syncProgressToServer();
+      showLobby();
+    }
+
+    function exitToLobbyFromModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+      exitToLobby();
+    }
+
+    window.onload = function() {
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
