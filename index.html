@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Defenders 3 : 중3 수학 디펜스</title>
+  <title>Math Defenders 3 : 중3 수학 디펜스 (60 Waves Edition)</title>
   <style>
     :root {
       --bg: #090e17;
@@ -21,7 +21,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding: 10px; }
 
-    /* 헤더 한 줄 고정 */
     header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--card-bg); border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 10px; }
     .title-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .title-group h1 { font-size: 1.08rem; color: var(--accent); letter-spacing: -0.5px; white-space: nowrap; }
@@ -34,29 +33,24 @@
     .btn-danger:hover { background: #991b1b; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-    /* 포탑 관리 인스펙터 패널 */
     #tower-inspector-modal { position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.95); border: 2px solid var(--accent); border-radius: 10px; padding: 10px 14px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.8); backdrop-filter: blur(6px); width: 230px; }
     .insp-title { font-size: 0.88rem; font-weight: bold; color: var(--accent); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .insp-stat { font-size: 0.74rem; color: #cbd5e1; margin: 2px 0; }
     .insp-btns { display: flex; gap: 6px; margin-top: 8px; }
 
-    /* 메인 캔버스 */
     #game-container { position: relative; width: 900px; height: 450px; background: #060a12; border-radius: 14px; border: 2px solid var(--border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
     canvas { display: block; cursor: crosshair; }
 
-    /* 대시보드 */
     #dashboard { width: 100%; max-width: 900px; margin-top: 8px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
     .panel { background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .panel-header { font-size: 0.92rem; font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; color: var(--accent); align-items: center; }
 
-    /* 퀴즈 박스 */
     #quiz-box { display: flex; flex-direction: column; gap: 8px; }
     #question-text { font-size: 0.95rem; font-weight: 600; min-height: 40px; line-height: 1.45; color: #f1f5f9; }
     .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .choice-btn { background: #1a2538; color: #fff; border: 1px solid #2a3d5e; border-radius: 8px; padding: 9px; font-size: 0.88rem; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.15s; }
     .choice-btn:hover { background: #263857; border-color: var(--accent); transform: translateY(-1px); }
 
-    /* 포탑 선택 카드 목록 */
     .tower-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 4px; }
     .tower-card { background: #0c1424; border: 2px solid var(--border); border-radius: 8px; padding: 6px 8px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 2px; position: relative; }
     .tower-card.selected { border-color: var(--accent); background: #162642; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
@@ -68,7 +62,6 @@
     .tower-card .t-desc { font-size: 0.7rem; color: #94a3b8; }
     .action-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; justify-content: flex-end; }
 
-    /* 모달 */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
     .modal-card { background: var(--card-bg); border: 2px solid var(--border); border-radius: 16px; padding: 22px; width: 92%; max-width: 440px; text-align: center; box-shadow: 0 10px 35px rgba(0,0,0,0.8); }
     .modal-card h2 { color: var(--accent); margin-bottom: 10px; font-size: 1.25rem; }
@@ -81,29 +74,26 @@
     .rank-table th, .rank-table td { padding: 5px 3px; border-bottom: 1px solid var(--border); text-align: center; }
     .rank-table th { color: var(--accent); }
 
-    /* 로비 */
     #stage-select-view { width: 100%; max-width: 900px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin-top: 8px; }
-    .stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 16px; }
-    .stage-card { background: #0a1120; border: 2px solid var(--border); border-radius: 10px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
-    .stage-card:hover:not(.locked) { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 6px 16px rgba(56, 189, 248, 0.25); }
-    .stage-card.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.8); }
+    .stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; margin-top: 14px; max-height: 480px; overflow-y: auto; padding-right: 4px; }
+    .stage-card { background: #0a1120; border: 2px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+    .stage-card:hover:not(.locked) { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25); }
+    .stage-card.locked { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
 
-    /* 토스트 알림 */
     #toast-msg { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 9px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; border: 1px solid var(--accent); box-shadow: 0 6px 20px rgba(0,0,0,0.6); z-index: 2000; transition: opacity 0.3s; pointer-events: none; }
 
-    /* 몬스터 도감 전용 시각화 스타일 */
     .guide-tabs { display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     .guide-tab-btn { flex: 1; padding: 8px; border-radius: 6px; background: #080d17; border: 1px solid var(--border); color: #94a3b8; font-weight: bold; cursor: pointer; font-size: 0.82rem; transition: all 0.2s; }
     .guide-tab-btn.active { background: #1e2e4a; color: var(--accent); border-color: var(--accent); }
     
-    .mon-card { display: flex; align-items: center; gap: 12px; background: #090e18; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 12px; }
-    .mon-preview { width: 50px; height: 50px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; background: #030712; border-radius: 8px; border: 1px solid #1e293b; position: relative; }
+    .mon-card { display: flex; align-items: center; gap: 12px; background: #090e18; border: 1px solid #1e293b; border-radius: 10px; padding: 8px 10px; }
+    .mon-preview { width: 46px; height: 46px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; background: #030712; border-radius: 8px; border: 1px solid #1e293b; position: relative; }
     .mon-info { flex: 1; text-align: left; }
     .mon-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-    .mon-name { font-size: 0.86rem; font-weight: bold; color: #f1f5f9; }
-    .mon-wave-badge { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; font-weight: bold; background: #1e3a5f; color: #38bdf8; border: 1px solid #0284c7; }
-    .mon-stats { font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
-    .mon-counter { font-size: 0.74rem; background: #111e33; padding: 3px 6px; border-radius: 4px; border-left: 3px solid var(--gold); color: #e2e8f0; }
+    .mon-name { font-size: 0.84rem; font-weight: bold; color: #f1f5f9; }
+    .mon-wave-badge { font-size: 0.66rem; padding: 1px 5px; border-radius: 4px; font-weight: bold; background: #1e3a5f; color: #38bdf8; border: 1px solid #0284c7; }
+    .mon-stats { font-size: 0.7rem; color: #94a3b8; margin-bottom: 2px; }
+    .mon-counter { font-size: 0.72rem; background: #111e33; padding: 3px 6px; border-radius: 4px; border-left: 3px solid var(--gold); color: #e2e8f0; }
 
     .hidden { display: none !important; }
   </style>
@@ -112,7 +102,6 @@
 
   <div id="toast-msg" class="hidden">알림</div>
 
-  <!-- 상단 정보 헤더 -->
   <header>
     <div class="title-group">
       <h1>🛡️ Math Defenders 3</h1>
@@ -120,9 +109,9 @@
     </div>
     <div class="stats-group">
       <div id="stat-gold-wrap" class="hidden">골드: <span id="val-gold" style="color:var(--gold);">300</span>G</div>
-      <div id="stat-wave-wrap" class="hidden">웨이브: <span id="val-wave" style="color:var(--accent);">1</span></div>
+      <div id="stat-wave-wrap" class="hidden">웨이브: <span id="val-wave" style="color:var(--accent);">1</span>/60</div>
       <div id="stat-leaks-wrap" class="hidden">통과: <span id="val-leaks" style="color:var(--danger);">0</span>/3</div>
-      <div>★ <span id="val-stars" style="color:var(--gold);">0</span></div>
+      <div>★ <span id="val-stars" style="color:var(--gold);">0</span>/180</div>
       <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 랭킹</button>
       <button class="btn" style="background:#0284c7; color:#fff;" onclick="openSynergyModal()">📖 상성 도감</button>
       <button class="btn btn-secondary hidden" id="btn-exit-wave" onclick="exitToLobby()">🚪 나가기</button>
@@ -130,46 +119,47 @@
     </div>
   </header>
 
-  <!-- 1. 웨이브 선택 로비 -->
+  <!-- 1. 웨이브 선택 로비 (총 60웨이브) -->
   <div id="stage-select-view">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
       <div>
-        <h2 style="font-size: 1.25rem; color: var(--accent);">🗺️ 웨이브 선택 로비</h2>
-        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 3px;">도전할 웨이브를 선택하세요. 별(★)을 모으면 강력한 상생 포탑과 무한 모드가 해금됩니다!</p>
+        <h2 style="font-size: 1.25rem; color: var(--accent);">🗺️ 60 웨이브 작전 지도</h2>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px;">한 달 동안 60개 웨이브를 정복하고 수학 마스터에 도전하세요! (별 150개 달성 시 무한 모드 개방)</p>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 1rem; font-weight: bold; color: var(--gold);">
-          내 누적 별점: ★ <span id="lobby-total-stars">0</span>
+        <div style="font-size: 0.95rem; font-weight: bold; color: var(--gold);">
+          내 누적 별점: ★ <span id="lobby-total-stars">0</span> / 180
         </div>
       </div>
     </div>
 
-    <!-- 별 누적 포탑 해금 현황 바 (총 9종) -->
-    <div style="margin-top: 12px; padding: 10px; background: #070b14; border-radius: 8px; border: 1px solid #1a2538;">
-      <div style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; margin-bottom: 6px;">🎁 누적 별 보상 달성 현황 (총 9종 포탑 라인업)</div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 6px; font-size: 0.72rem;">
-        <div id="badge-unlock-root" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">√ 루트 빔: 기본</div>
-        <div id="badge-unlock-factor" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">(x+a) 게틀링: 기본</div>
-        <div id="badge-unlock-rational" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">÷ 유리화포: ★ 3개</div>
-        <div id="badge-unlock-quad" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">x² 곡사포: ★ 8개</div>
-        <div id="badge-unlock-discr" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">D 판별 레이저: ★ 15개</div>
-        <div id="badge-unlock-trig" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">sinθ 스나이퍼: ★ 24개</div>
-        <div id="badge-unlock-tan" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">tan 기울기 캐논: ★ 33개</div>
-        <div id="badge-unlock-circle" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">○ 원주각 테슬라: ★ 42개</div>
-        <div id="badge-unlock-stat" style="padding: 5px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">σ 통계 분산포: ★ 52개</div>
+    <!-- 별 누적 포탑 해금 현황 바 (총 11종) -->
+    <div style="margin-top: 10px; padding: 10px; background: #070b14; border-radius: 8px; border: 1px solid #1a2538;">
+      <div style="font-size: 0.76rem; font-weight: bold; color: #cbd5e1; margin-bottom: 6px;">🎁 누적 별 보상 달성 현황 (총 11종 포탑 라인업)</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 5px; font-size: 0.7rem;">
+        <div id="badge-unlock-root" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">√ 루트 빔: 기본</div>
+        <div id="badge-unlock-factor" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">(x+a) 게틀링: 기본</div>
+        <div id="badge-unlock-rational" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">÷ 유리화포: ★ 3</div>
+        <div id="badge-unlock-quad" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">x² 곡사포: ★ 8</div>
+        <div id="badge-unlock-discr" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">D 판별 레이저: ★ 15</div>
+        <div id="badge-unlock-trig" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">sinθ 스나이퍼: ★ 24</div>
+        <div id="badge-unlock-tan" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">tan 캐논: ★ 35</div>
+        <div id="badge-unlock-circle" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">○ 테슬라: ★ 50</div>
+        <div id="badge-unlock-stat" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">σ 분산포: ★ 70</div>
+        <div id="badge-unlock-log" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">log 디케이: ★ 95</div>
+        <div id="badge-unlock-lim" style="padding: 4px; border-radius: 6px; background:#162238; border:1px solid #334155; color:#94a3b8;">lim 블랙홀: ★ 125</div>
       </div>
     </div>
 
-    <!-- 스테이지 카드 그리드 -->
+    <!-- 60웨이브 스테이지 카드 그리드 -->
     <div class="stage-grid" id="stage-grid-container"></div>
   </div>
 
-  <!-- 2. 전투 및 퀴즈 플레이 화면 -->
+  <!-- 2. 전투 및 퀴즈 플레이 화면 (슬롯 22개 확장) -->
   <div id="game-play-view" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
     <div id="game-container">
       <canvas id="gameCanvas" width="900" height="450"></canvas>
       
-      <!-- 포탑 인스펙터 플로팅 패널 -->
       <div id="tower-inspector-modal" class="hidden">
         <div class="insp-title">
           <span id="insp-name">포탑 정보</span>
@@ -187,7 +177,6 @@
     </div>
 
     <div id="dashboard">
-      <!-- 퀴즈 패널 -->
       <div class="panel">
         <div class="panel-header">
           <span>📖 수학 정비 페이즈 (남은 문제: <span id="val-quiz-left">3</span>/3)</span>
@@ -197,17 +186,16 @@
           <div id="question-text">문제를 불러오는 중...</div>
           <div class="choices-grid" id="choices-container"></div>
         </div>
-        <div style="font-size: 0.72rem; color: #64748b; margin-top: 6px;">* 정답 시 100G 즉시 지급! 틀려도 해설을 읽고 개념을 다질 수 있습니다.</div>
+        <div style="font-size: 0.72rem; color: #64748b; margin-top: 6px;">* 골드는 <b>오직 수학 퀴즈 정답(+100G)</b>으로만 벌 수 있습니다! 집중해서 풀어보세요.</div>
       </div>
 
-      <!-- 포탑 배치 패널 -->
       <div class="panel">
         <div class="panel-header">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span>🔨 포탑 배치 (9종 라인업)</span>
+            <span>🔨 포탑 배치 (11종 라인업)</span>
             <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.72rem; border-color: var(--accent); color: var(--accent);" onclick="openSynergyModal()">📖 상성 도감</button>
           </div>
-          <span style="font-size:0.75rem; color:#94a3b8;">길가 점선 슬롯을 클릭해 설치</span>
+          <span style="font-size:0.74rem; color:#94a3b8;">점선 슬롯 클릭 (총 22개)</span>
         </div>
         <div class="tower-cards" id="tower-cards-container">
           <div class="tower-card selected" onclick="selectTowerType('root')" id="card-root">
@@ -242,25 +230,37 @@
             <div class="t-lock-badge hidden" id="lock-trig">🔒 24★</div>
             <div class="t-name">sinθ 스나이퍼</div>
             <div class="t-cost">270 G</div>
-            <div class="t-desc">초장거리 / 고속비행기 즉각 격추</div>
+            <div class="t-desc">초장거리 / 고속비행체 즉각 격추</div>
           </div>
           <div class="tower-card" onclick="selectTowerType('tan')" id="card-tan">
-            <div class="t-lock-badge hidden" id="lock-tan">🔒 33★</div>
+            <div class="t-lock-badge hidden" id="lock-tan">🔒 35★</div>
             <div class="t-name">tan 기울기 캐논</div>
             <div class="t-cost">300 G</div>
-            <div class="t-desc">밀쳐내기(넉백) / 가속 돌진체 카운터</div>
+            <div class="t-desc">밀쳐내기(넉백) / 돌진체 카운터</div>
           </div>
           <div class="tower-card" onclick="selectTowerType('circle')" id="card-circle">
-            <div class="t-lock-badge hidden" id="lock-circle">🔒 42★</div>
+            <div class="t-lock-badge hidden" id="lock-circle">🔒 50★</div>
             <div class="t-name">○ 원주각 테슬라</div>
             <div class="t-cost">330 G</div>
-            <div class="t-desc">360° 광역 체인 감전 / 실드 파괴</div>
+            <div class="t-desc">360° 광역 체인 감전 / 실드 분쇄</div>
           </div>
           <div class="tower-card" onclick="selectTowerType('stat')" id="card-stat">
-            <div class="t-lock-badge hidden" id="lock-stat">🔒 52★</div>
+            <div class="t-lock-badge hidden" id="lock-stat">🔒 70★</div>
             <div class="t-name">σ 통계 분산포</div>
-            <div class="t-cost">380 G</div>
-            <div class="t-desc">적 밀집 시 폭발력 3배 / 군집체 킬러</div>
+            <div class="t-cost">370 G</div>
+            <div class="t-desc">적 밀집 시 최대 3배 폭발 / 군집 킬러</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('log')" id="card-log">
+            <div class="t-lock-badge hidden" id="lock-log">🔒 95★</div>
+            <div class="t-name">log 디케이 타워</div>
+            <div class="t-cost">410 G</div>
+            <div class="t-desc">방어력/속도 점진 침식 및 지속 감쇠</div>
+          </div>
+          <div class="tower-card" onclick="selectTowerType('lim')" id="card-lim">
+            <div class="t-lock-badge hidden" id="lock-lim">🔒 125★</div>
+            <div class="t-name">lim 극한 블랙홀</div>
+            <div class="t-cost">460 G</div>
+            <div class="t-desc">수렴점으로 적 끌어당김 + 압축 붕괴</div>
           </div>
         </div>
         <div class="action-row">
@@ -312,26 +312,21 @@
     </div>
   </div>
 
-  <!-- 모달 2-1: 몬스터 시각화 & 포탑 상성 종합 도감 (대형 도감) -->
+  <!-- 모달 2-1: 몬스터 시각화 & 포탑 상성 종합 도감 (10종 몬스터 / 11종 포탑) -->
   <div class="modal-overlay hidden" id="modal-synergy">
     <div class="modal-card" style="max-width: 600px; text-align: left; padding: 18px 22px;">
       <h2 style="color:var(--accent); text-align: center; margin-bottom: 4px; font-size: 1.2rem;">📖 몬스터 정보 & 포탑 상성 도감</h2>
       <p style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-bottom: 12px;">게임 화면 속 몬스터의 실제 모양과 출현 시기, 카운터 포탑을 확인하세요.</p>
 
-      <!-- 탭 선택기 -->
       <div class="guide-tabs">
-        <button class="guide-tab-btn active" id="tab-btn-monsters" onclick="switchGuideTab('monsters')">👾 몬스터 도감 (8종 실제 외형)</button>
-        <button class="guide-tab-btn" id="tab-btn-towers" onclick="switchGuideTab('towers')">🛡️ 포탑 상성표 (9종 라인업)</button>
+        <button class="guide-tab-btn active" id="tab-btn-monsters" onclick="switchGuideTab('monsters')">👾 몬스터 도감 (10종 실제 외형)</button>
+        <button class="guide-tab-btn" id="tab-btn-towers" onclick="switchGuideTab('towers')">🛡️ 포탑 상성표 (11종 라인업)</button>
       </div>
 
-      <!-- 탭 1: 몬스터 8종 시각화 그래픽 목록 -->
       <div id="guide-view-monsters" style="max-height: 380px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 8px;">
-        
-        <!-- 1. 중장갑 골렘 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 인게임 주황 사각 블록 재현 -->
-            <div style="width: 32px; height: 32px; background: #f97316; border: 2px solid #fed7aa; display: flex; align-items: center; justify-content: center; transform: rotate(15deg); box-shadow: 0 0 8px rgba(249,115,22,0.4);">
+            <div style="width: 32px; height: 32px; background: #f97316; border: 2px solid #fed7aa; display: flex; align-items: center; justify-content: center; transform: rotate(15deg);">
               <span style="font-size: 8px; font-weight: bold; color: #fff; transform: rotate(-15deg);">x²-a²</span>
             </div>
           </div>
@@ -340,16 +335,14 @@
               <span class="mon-name" style="color: #fb923c;">중장갑 골렘 (x²-a²)</span>
               <span class="mon-wave-badge">1웨이브~ 상시</span>
             </div>
-            <div class="mon-stats">회전하는 주황색 사각 블록 | <b>기본 체력 3.0배</b> (극도로 단단함)</div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#38bdf8;">√ 루트 빔</span> (2배 지속딜) / <span style="color:#3b82f6;">÷ 유리화포</span> (2.5배 장갑 관통)</div>
+            <div class="mon-stats">주황색 사각 블록 | <b>기본 체력 3.0배</b> (극도로 단단함)</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#38bdf8;">√ 루트 빔</span> (2배 지속딜) / <span style="color:#3b82f6;">÷ 유리화포</span> (2.5배 장갑 관통)</div>
           </div>
         </div>
 
-        <!-- 2. 분열 슬라임 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 인게임 통통 튀는 타원 슬라임 재현 -->
-            <div style="width: 34px; height: 26px; background: #10b981; border: 2px solid #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(16,185,129,0.4);">
+            <div style="width: 34px; height: 26px; background: #10b981; border: 2px solid #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
               <span style="font-size: 8px; font-weight: bold; color: #fff;">(x+a)</span>
             </div>
           </div>
@@ -359,14 +352,12 @@
               <span class="mon-wave-badge">1웨이브~ 상시</span>
             </div>
             <div class="mon-stats">통통 튀는 초록색 타원 | 빠른 이동 속도 (1.3배)</div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#22c55e;">(x+a) 인수분해 게틀링</span> (1.8배 폭딜 연타)</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#22c55e;">(x+a) 인수분해 게틀링</span> (1.8배 폭딜 연타)</div>
           </div>
         </div>
 
-        <!-- 3. 고속 비행체 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 인게임 삼각 비행체 재현 -->
             <div style="width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 26px solid #a855f7; display: flex; align-items: center; justify-content: center; position: relative;">
               <span style="position: absolute; top: 11px; font-size: 7px; font-weight: bold; color: #fff;">30°</span>
             </div>
@@ -377,15 +368,13 @@
               <span class="mon-wave-badge">1웨이브~ 상시</span>
             </div>
             <div class="mon-stats">보라색 쐐기형 삼각형 | <b>초고속 돌파 (1.75배)</b></div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#ec4899;">sinθ 스나이퍼</span> (초장거리 2.5배 일격 격추)</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#ec4899;">sinθ 스나이퍼</span> (초장거리 2.5배 일격 격추)</div>
           </div>
         </div>
 
-        <!-- 4. 무리수 재생체 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 청록색 구체와 십자 회복 오라 재현 -->
-            <div style="width: 32px; height: 32px; background: #06b6d4; border: 2px solid #a5f3fc; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(6,182,212,0.5);">
+            <div style="width: 32px; height: 32px; background: #06b6d4; border: 2px solid #a5f3fc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
               <span style="font-size: 10px; font-weight: bold; color: #fff;">√p</span>
             </div>
           </div>
@@ -395,14 +384,12 @@
               <span class="mon-wave-badge" style="background:#0e4a5a; color:#22d3ee; border-color:#06b6d4;">5웨이브~ 출현</span>
             </div>
             <div class="mon-stats">청록색 원형 구체 | <b>실시간 체력 자가 치유(지속 힐링)</b></div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#f97316;">D 판별 레이저</span> (잔여 체력 비례 극딜로 즉시 삭제)</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#f97316;">D 판별 레이저</span> (잔여 체력 비례 극딜로 즉각 컷)</div>
           </div>
         </div>
 
-        <!-- 5. 가속 돌진체 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 붉은 돌진 화살표 재현 -->
             <div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 24px solid #f43f5e; display: flex; align-items: center; justify-content: center; position: relative;">
               <span style="position: absolute; top: 11px; font-size: 7px; font-weight: bold; color: #fff;">Δv</span>
             </div>
@@ -413,15 +400,13 @@
               <span class="mon-wave-badge" style="background:#581c2b; color:#fb7185; border-color:#f43f5e;">9웨이브~ 출현</span>
             </div>
             <div class="mon-stats">붉은색 화살촉 | <b>이동할수록 기하급수적으로 속도 증가</b></div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#14b8a6;">tan 기울기 캐논</span> (피격 시 넉백으로 뒤로 밀쳐냄)</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#14b8a6;">tan 기울기 캐논</span> (피격 시 넉백으로 뒤로 밀쳐냄)</div>
           </div>
         </div>
 
-        <!-- 6. 방어막 실드체 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 파란 원과 외부 실드 링 재현 -->
-            <div style="width: 36px; height: 36px; border: 2px dashed #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(56,189,248,0.6);">
+            <div style="width: 36px; height: 36px; border: 2px dashed #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
               <div style="width: 24px; height: 24px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                 <span style="font-size: 11px; font-weight: bold; color: #fff;">⊙</span>
               </div>
@@ -430,17 +415,15 @@
           <div class="mon-info">
             <div class="mon-header">
               <span class="mon-name" style="color: #60a5fa;">방어막 실드체 (⊙)</span>
-              <span class="mon-wave-badge" style="background:#1e3a8a; color:#93c5fd; border-color:#3b82f6;">13웨이브~ 출현</span>
+              <span class="mon-wave-badge" style="background:#1e3a8a; color:#93c5fd; border-color:#3b82f6;">14웨이브~ 출현</span>
             </div>
             <div class="mon-stats">푸른색 에너지 링 | <b>체력 65%에 달하는 강력한 쉴드 보호막</b></div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#06b6d4;">○ 원주각 테슬라</span> (쉴드에 2.5배 체인 감전 대미지)</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#06b6d4;">○ 원주각 테슬라</span> (쉴드에 2.5배 체인 감전)</div>
           </div>
         </div>
 
-        <!-- 7. 통계 군집체 -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 노란 소형 구체 3개 군집 재현 -->
             <div style="display: flex; gap: 3px; align-items: center;">
               <div style="width: 14px; height: 14px; background: #eab308; border-radius: 50%; font-size: 7px; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;">σ</div>
               <div style="width: 18px; height: 18px; background: #eab308; border-radius: 50%; font-size: 8px; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;">σ</div>
@@ -449,17 +432,49 @@
           <div class="mon-info">
             <div class="mon-header">
               <span class="mon-name" style="color: #fde047;">통계 군집체 (σ)</span>
-              <span class="mon-wave-badge" style="background:#533f03; color:#fde047; border-color:#eab308;">17웨이브~ 출현</span>
+              <span class="mon-wave-badge" style="background:#533f03; color:#fde047; border-color:#eab308;">20웨이브~ 출현</span>
             </div>
-            <div class="mon-stats">작은 노란색 다수 구체 | <b>떼지어 빠른 속도로 몰려오는 물량 공세</b></div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> <span style="color:#a855f7;">σ 통계 분산포</span> (주변 적 밀집 시 3배 광역 폭발)</div>
+            <div class="mon-stats">노란색 군집 구체 | <b>떼지어 빠른 속도로 몰려오는 물량 공세</b></div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#a855f7;">σ 통계 분산포</span> (주변 적 밀집 시 3배 광역 폭발)</div>
           </div>
         </div>
 
-        <!-- 8. 일반 정찰병 -->
+        <!-- 신규 몬스터 1: 허수 위상체 (i) -->
         <div class="mon-card">
           <div class="mon-preview">
-            <!-- 붉은 기본 원 재현 -->
+            <div style="width: 30px; height: 30px; background: rgba(236, 72, 153, 0.4); border: 2px dashed #f472b6; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 11px; font-weight: bold; color: #f472b6;">i</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #f472b6;">허수 위상체 (i)</span>
+              <span class="mon-wave-badge" style="background:#500724; color:#f472b6; border-color:#db2777;">28웨이브~ 출현</span>
+            </div>
+            <div class="mon-stats">반투명 깜빡임 | <b>주기적으로 위상 변위(무적 은신)로 단일 타겟팅 회피</b></div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#facc15;">x² 곡사포</span> / <span style="color:#06b6d4;">○ 테슬라</span> (광역 스플래시로 격추)</div>
+          </div>
+        </div>
+
+        <!-- 신규 몬스터 2: 미적분 보스 타이탄 -->
+        <div class="mon-card">
+          <div class="mon-preview">
+            <div style="width: 38px; height: 38px; background: #831843; border: 2px solid #fda4af; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(244,63,94,0.6);">
+              <span style="font-size: 14px; font-weight: bold; color: #fff;">∫</span>
+            </div>
+          </div>
+          <div class="mon-info">
+            <div class="mon-header">
+              <span class="mon-name" style="color: #fda4af;">미적분 보스 타이탄 (∫)</span>
+              <span class="mon-wave-badge" style="background:#881337; color:#fecdd3; border-color:#e11d48;">매 10웨이브 보스</span>
+            </div>
+            <div class="mon-stats">거대 덩치와 무지막지한 <b>초대형 체력(일반몹의 5~6배)</b></div>
+            <div class="mon-counter">🎯 <b>카운터:</b> <span style="color:#6366f1;">log 디케이</span>(방어력 영구 침식) + <span style="color:#818cf8;">lim 블랙홀</span>(발 묶기)</div>
+          </div>
+        </div>
+
+        <div class="mon-card">
+          <div class="mon-preview">
             <div style="width: 28px; height: 28px; background: #ef4444; border: 2px solid #fecaca; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
               <span style="font-size: 11px; font-weight: bold; color: #fff;">k</span>
             </div>
@@ -470,40 +485,44 @@
               <span class="mon-wave-badge">1웨이브~ 상시</span>
             </div>
             <div class="mon-stats">붉은색 원형 | 표준 체력과 속도의 기본 몬스터</div>
-            <div class="mon-counter">🎯 <b>카운터 포탑:</b> 모든 기본 포탑으로 손쉽게 격퇴 가능</div>
+            <div class="mon-counter">🎯 <b>카운터:</b> 모든 기본 포탑으로 손쉽게 격퇴 가능</div>
           </div>
         </div>
-
       </div>
 
-      <!-- 탭 2: 포탑 9종 상성표 목록 -->
-      <div id="guide-view-towers" class="hidden" style="max-height: 380px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem;">
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #38bdf8;">
-          <b style="color:#38bdf8;">√ 루트 빔 (기본 해금):</b> 지속 감속(35%) 네온 빔. 단단한 <b>골렘(x²-a²)</b>에게 2배 피해.
+      <div id="guide-view-towers" class="hidden" style="max-height: 380px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 7px; font-size: 0.77rem;">
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #38bdf8;">
+          <b style="color:#38bdf8;">√ 루트 빔 (기본):</b> 지속 감속(35%) 네온 빔. 단단한 <b>골렘(x²-a²)</b>에게 2배 피해.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #22c55e;">
-          <b style="color:#22c55e;">(x+a) 인수분해포 (기본 해금):</b> 고속 연사 게틀링. 분열하는 <b>슬라임(x+a)</b> 카운터 (1.8배 폭딜).
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #22c55e;">
+          <b style="color:#22c55e;">(x+a) 인수분해포 (기본):</b> 고속 연사 게틀링. 분열 <b>슬라임(x+a)</b> 카운터 (1.8배 폭딜).
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #3b82f6;">
-          <b style="color:#3b82f6;">÷ 유리화포 (★ 3개 해금):</b> 분모 유리화 관통탄. <b>골렘(x²-a²)</b> 장갑을 뚫고 2.5배 관통 피해.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #3b82f6;">
+          <b style="color:#3b82f6;">÷ 유리화포 (★ 3):</b> 분모 유리화 관통탄. <b>골렘(x²-a²)</b> 장갑을 뚫고 2.5배 관통 피해.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #facc15;">
-          <b style="color:#facc15;">x² 곡사포 (★ 8개 해금):</b> 포물선 궤적으로 낙하하는 강력한 광역 스플래시 폭발탄.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #facc15;">
+          <b style="color:#facc15;">x² 곡사포 (★ 8):</b> 포물선 낙하 광역 스플래시 폭발탄. 허수 위상체($i$) 탐지 요격.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #f97316;">
-          <b style="color:#f97316;">D 판별 레이저 (★ 15개 해금):</b> 체력 비율 비례 극딜. 자가 치유하는 <b>무리수 재생체(√p)</b> 즉각 저격.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #f97316;">
+          <b style="color:#f97316;">D 판별 레이저 (★ 15):</b> 체력 비율 비례 극딜. 자가 치유 <b>무리수 재생체(√p)</b> 즉각 저격.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #ec4899;">
-          <b style="color:#ec4899;">sinθ 스나이퍼 (★ 24개 해금):</b> 맵 전체를 사정거리에 두는 저격포. <b>고속 비행체(30°)</b> 2.5배 즉각 격추.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #ec4899;">
+          <b style="color:#ec4899;">sinθ 스나이퍼 (★ 24):</b> 맵 전체 사거리 저격포. <b>고속 비행체(30°)</b> 2.5배 즉각 격추.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #14b8a6;">
-          <b style="color:#14b8a6;">tan 기울기 캐논 (★ 33개 해금):</b> 넉백(밀쳐내기) 충격파. 가속 돌진하는 <b>돌진체(Δv)</b>의 발을 묶음.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #14b8a6;">
+          <b style="color:#14b8a6;">tan 기울기 캐논 (★ 35):</b> 넉백(밀쳐내기) 충격파. 가속 <b>돌진체(Δv)</b>의 발을 묶음.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #06b6d4;">
-          <b style="color:#06b6d4;">○ 원주각 테슬라 (★ 42개 해금):</b> 360° 광역 체인 감전. <b>방어막 실드체(⊙)</b>의 보호막을 2.5배로 분쇄.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #06b6d4;">
+          <b style="color:#06b6d4;">○ 원주각 테슬라 (★ 50):</b> 360° 체인 감전. <b>방어막 실드체(⊙)</b> 보호막을 2.5배로 분쇄.
         </div>
-        <div style="background:#080d17; padding:10px 12px; border-radius:8px; border-left:3px solid #a855f7;">
-          <b style="color:#a855f7;">σ 통계 분산포 (★ 52개 해금):</b> 적 밀집도에 비례해 최대 3배 폭발. <b>통계 군집체(σ)</b> 완벽 제압.
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #a855f7;">
+          <b style="color:#a855f7;">σ 통계 분산포 (★ 70):</b> 적 밀집도 비례 최대 3배 폭발. <b>통계 군집체(σ)</b> 완벽 제압.
+        </div>
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #6366f1;">
+          <b style="color:#6366f1;">log 디케이 타워 (★ 95):</b> 몬스터 방어력 영구 40% 침식 및 지속 감쇠. <b>타이탄 보스(∫)</b>의 킬러.
+        </div>
+        <div style="background:#080d17; padding:9px 11px; border-radius:8px; border-left:3px solid #818cf8;">
+          <b style="color:#818cf8;">lim 극한 블랙홀 (★ 125):</b> 주위 적을 특이점(수렴점)으로 끌어모아 묶어두고 고밀도 붕괴 폭발.
         </div>
       </div>
 
@@ -539,7 +558,7 @@
     </div>
   </div>
 
-  <!-- 모달 5: 공통 경고 모달 -->
+  <!-- 모달 5: 경고 모달 -->
   <div class="modal-overlay hidden" id="modal-alert">
     <div class="modal-card">
       <h2 style="color:var(--danger);" id="modal-alert-title">⚠️ 알림</h2>
@@ -549,9 +568,6 @@
   </div>
 
   <script>
-    /* ========================================================
-       1. 백엔드 통신 및 데이터 관리
-       ======================================================== */
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzWJmuqKc55A8bkXA6uYM0Mj_risVnXVHidcwkMAW81TiBCBEdj-sdIOD2_WC_PZi_Nw/exec";
 
     let currentUser = {
@@ -564,7 +580,7 @@
       solvedCount: 0
     };
 
-    const TOTAL_STAGES = 20;
+    const TOTAL_STAGES = 60;
     const stageStars = {};
 
     function saveUserGold() {
@@ -671,7 +687,6 @@
       document.getElementById('modal-alert').classList.add('hidden');
     }
 
-    /* 도감 모달 및 탭 제어 */
     function openSynergyModal() {
       const modal = document.getElementById('modal-synergy');
       if (modal) modal.classList.remove('hidden');
@@ -704,7 +719,6 @@
       }
     }
 
-    /* 로그인 처리 */
     async function handleLogin() {
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-pw').value.trim();
@@ -796,7 +810,7 @@
       } catch (err) {
         document.getElementById('btn-do-login').disabled = false;
         msg.innerText = "";
-        showAlertModal("⚠️️ 서버 통신 오류", `구글 시트와 통신할 수 없습니다:\n${err.message}`);
+        showAlertModal("⚠ 서버 통신 오류", `구글 시트와 통신할 수 없습니다:\n${err.message}`);
       }
     }
 
@@ -846,7 +860,6 @@
       document.getElementById('display-user-info').innerText = "로그인 필요";
     }
 
-    /* 랭킹 뷰어 */
     let cachedRanks = null;
     async function openLeaderboard() {
       document.getElementById('modal-leaderboard').classList.remove('hidden');
@@ -912,9 +925,6 @@
       document.getElementById('modal-leaderboard').classList.add('hidden');
     }
 
-    /* ========================================================
-       2. 중3 전 단원 49종 문제 생성기
-       ======================================================== */
     const QuestionEngine = {
       generators: [
         // 1. 실수와 연산 (7종)
@@ -1186,7 +1196,7 @@
 
     function generateNextQuiz() {
       if (quizLeft <= 0) {
-        document.getElementById('question-text').innerText = "이번 웨이브 준비 퀴즈를 모두 완료했습니다! 포탑을 설치하고 출격하세요.";
+        document.getElementById('question-text').innerText = "이번 웨이브 준비 퀴즈를 완료했습니다! 기지를 강화하고 출격하세요.";
         document.getElementById('choices-container').innerHTML = "";
         return;
       }
@@ -1238,9 +1248,6 @@
       document.getElementById('modal-explain').classList.add('hidden');
     }
 
-    /* ========================================================
-       3. 포탑 제원 & 업그레이드
-       ======================================================== */
     const TOWER_SPECS = {
       root: { cost: 100, range: 130, damage: 1.4, fireRate: 1, symbol: "√", color: "#38bdf8", name: "루트 빔", unlockStars: 0 },
       factor: { cost: 140, range: 140, damage: 18, fireRate: 26, symbol: "(x)", color: "#22c55e", name: "인수분해포", unlockStars: 0 },
@@ -1248,9 +1255,11 @@
       quadratic: { cost: 210, range: 190, damage: 55, fireRate: 68, symbol: "x²", color: "#facc15", name: "곡사포", splash: 75, unlockStars: 8 },
       discr: { cost: 240, range: 170, damage: 45, fireRate: 52, symbol: "D", color: "#f97316", name: "판별 레이저", unlockStars: 15 },
       trig: { cost: 270, range: 290, damage: 110, fireRate: 95, symbol: "sin", color: "#ec4899", name: "삼각 저격포", unlockStars: 24 },
-      tan: { cost: 300, range: 180, damage: 40, fireRate: 58, symbol: "tan", color: "#14b8a6", name: "기울기 캐논", knockback: 22, unlockStars: 33 },
-      circle: { cost: 330, range: 145, damage: 34, fireRate: 46, symbol: "○", color: "#06b6d4", name: "원주각 테슬라", unlockStars: 42 },
-      stat: { cost: 380, range: 210, damage: 75, fireRate: 82, symbol: "σ", color: "#a855f7", name: "통계 분산포", splash: 85, unlockStars: 52 }
+      tan: { cost: 300, range: 180, damage: 40, fireRate: 58, symbol: "tan", color: "#14b8a6", name: "기울기 캐논", knockback: 22, unlockStars: 35 },
+      circle: { cost: 330, range: 145, damage: 34, fireRate: 46, symbol: "○", color: "#06b6d4", name: "원주각 테슬라", unlockStars: 50 },
+      stat: { cost: 370, range: 210, damage: 75, fireRate: 82, symbol: "σ", color: "#a855f7", name: "통계 분산포", splash: 85, unlockStars: 70 },
+      log: { cost: 410, range: 175, damage: 0.9, fireRate: 1, symbol: "log", color: "#6366f1", name: "로그 디케이", decay: true, unlockStars: 95 },
+      lim: { cost: 460, range: 200, damage: 140, fireRate: 100, symbol: "lim", color: "#818cf8", name: "극한 블랙홀", vortex: true, splash: 90, unlockStars: 125 }
     };
 
     let selectedTowerType = 'root';
@@ -1277,9 +1286,11 @@
       setBadge('badge-unlock-quad', 8);
       setBadge('badge-unlock-discr', 15);
       setBadge('badge-unlock-trig', 24);
-      setBadge('badge-unlock-tan', 33);
-      setBadge('badge-unlock-circle', 42);
-      setBadge('badge-unlock-stat', 52);
+      setBadge('badge-unlock-tan', 35);
+      setBadge('badge-unlock-circle', 50);
+      setBadge('badge-unlock-stat', 70);
+      setBadge('badge-unlock-log', 95);
+      setBadge('badge-unlock-lim', 125);
 
       for (const [key, spec] of Object.entries(TOWER_SPECS)) {
         const card = document.getElementById(`card-${key}`);
@@ -1312,9 +1323,6 @@
       if (activeCard) activeCard.classList.add('selected');
     }
 
-    /* ========================================================
-       4. 타워 디펜스 캔버스 엔진
-       ======================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -1337,21 +1345,30 @@
       { x: 930, y: 260 }
     ];
 
+    // 총 22개의 전략 요충지 슬롯 배치
     const SLOTS = [
       { id: 1, x: 100, y: 50, tower: null },
       { id: 2, x: 100, y: 175, tower: null },
       { id: 3, x: 155, y: 235, tower: null },
       { id: 4, x: 285, y: 215, tower: null },
       { id: 5, x: 285, y: 400, tower: null },
-      { id: 6, x: 420, y: 400, tower: null },
-      { id: 7, x: 425, y: 255, tower: null },
-      { id: 8, x: 440, y: 50, tower: null },
-      { id: 9, x: 565, y: 50, tower: null },
-      { id: 10, x: 565, y: 195, tower: null },
-      { id: 11, x: 670, y: 50, tower: null },
-      { id: 12, x: 670, y: 320, tower: null },
-      { id: 13, x: 805, y: 185, tower: null },
-      { id: 14, x: 805, y: 335, tower: null }
+      { id: 6, x: 355, y: 400, tower: null },
+      { id: 7, x: 425, y: 400, tower: null },
+      { id: 8, x: 425, y: 255, tower: null },
+      { id: 9, x: 435, y: 50, tower: null },
+      { id: 10, x: 565, y: 50, tower: null },
+      { id: 11, x: 565, y: 195, tower: null },
+      { id: 12, x: 565, y: 340, tower: null },
+      { id: 13, x: 670, y: 50, tower: null },
+      { id: 14, x: 670, y: 200, tower: null },
+      { id: 15, x: 670, y: 320, tower: null },
+      { id: 16, x: 805, y: 185, tower: null },
+      { id: 17, x: 805, y: 335, tower: null },
+      { id: 18, x: 160, y: 50, tower: null },
+      { id: 19, x: 285, y: 50, tower: null },
+      { id: 20, x: 355, y: 175, tower: null },
+      { id: 21, x: 630, y: 110, tower: null },
+      { id: 22, x: 805, y: 50, tower: null }
     ];
 
     let towers = [];
@@ -1383,15 +1400,32 @@
         this.type = type;
         this.baseSpeed = 0.98;
         this.speed = this.baseSpeed;
-        this.maxHp = (110 + wave * 65) * (1 + (wave - 1) * 0.12);
+        
+        // 모의실험 검증된 60웨이브 점진 완만 체력 수식
+        this.maxHp = (180 + wave * 55) * (1 + (wave - 1) * 0.045);
         this.radius = 15;
         this.color = "#ef4444";
         this.label = "";
         this.hitFlash = 0;
         this.animTick = Math.random() * 100;
         this.shield = 0;
+        this.decayStacks = 0;
+        this.phaseTimer = 0;
+        this.isPhased = false;
 
-        if (type === 'golem') {
+        if (type === 'boss') {
+          this.maxHp *= 5.5;
+          this.baseSpeed = 0.55;
+          this.radius = 25;
+          this.color = "#fda4af";
+          this.label = "∫";
+        } else if (type === 'phantom') {
+          this.baseSpeed = 1.25;
+          this.maxHp *= 1.2;
+          this.radius = 14;
+          this.color = "#f472b6";
+          this.label = "i";
+        } else if (type === 'golem') {
           this.maxHp *= 3.0;
           this.baseSpeed = 0.65;
           this.radius = 20;
@@ -1446,12 +1480,24 @@
         this.animTick += 0.1;
         if (this.hitFlash > 0) this.hitFlash--;
 
+        // 허수 위상체 무적 은신 주기
+        if (this.type === 'phantom') {
+          this.phaseTimer = (this.phaseTimer + 1) % 180;
+          this.isPhased = (this.phaseTimer > 110 && this.phaseTimer < 160);
+        }
+
         if (this.type === 'regen' && this.hp < this.maxHp) {
-          this.hp = Math.min(this.maxHp, this.hp + 0.35);
+          this.hp = Math.min(this.maxHp, this.hp + (0.35 + currentWave * 0.05));
         }
 
         if (this.type === 'rusher') {
           this.speed = Math.min(2.5, this.speed + 0.0035);
+        }
+
+        // 로그 디케이 지속 감속 및 방어력 침식
+        if (this.decayStacks > 0) {
+          this.hp -= this.decayStacks * 0.45;
+          this.speed = Math.max(0.3, this.speed * 0.985);
         }
 
         const target = WAYPOINTS[this.wpIndex + 1];
@@ -1479,7 +1525,21 @@
         ctx.translate(this.x, this.y);
         ctx.fillStyle = this.hitFlash > 0 ? "#ffffff" : this.color;
 
-        if (this.type === 'golem') {
+        if (this.isPhased) {
+          ctx.globalAlpha = 0.35;
+        }
+
+        if (this.type === 'boss') {
+          ctx.save();
+          ctx.rotate(this.animTick * 0.2);
+          ctx.beginPath();
+          ctx.rect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fda4af";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.type === 'golem') {
           ctx.save();
           ctx.rotate(this.animTick * 0.4);
           ctx.fillRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
@@ -1524,12 +1584,12 @@
         }
 
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 9px sans-serif";
+        ctx.font = `bold ${this.type === 'boss' ? 14 : 9}px sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(this.label, 0, 0);
 
-        const barW = 26;
+        const barW = this.type === 'boss' ? 44 : 26;
         ctx.fillStyle = "#0f172a";
         ctx.fillRect(-barW/2, -this.radius - 9, barW, 4);
         ctx.fillStyle = this.hp > this.maxHp * 0.3 ? "#22c55e" : "#ef4444";
@@ -1548,7 +1608,7 @@
         this.target = target;
         this.spec = spec;
         this.towerLevel = towerLevel;
-        this.speed = spec.symbol === "sin" ? 14 : 8.0;
+        this.speed = spec.symbol === "sin" ? 14 : (spec.vortex ? 6.5 : 8.0);
         this.arrived = false;
         this.progress = 0;
         this.renderY = startY;
@@ -1599,6 +1659,8 @@
       }
 
       hitTarget() {
+        if (this.target.isPhased && !this.spec.splash && !this.spec.vortex) return;
+
         const lvlMultiplier = this.towerLevel === 3 ? 2.3 : (this.towerLevel === 2 ? 1.55 : 1.0);
         let dmg = this.spec.damage * lvlMultiplier;
 
@@ -1616,6 +1678,21 @@
           const kbDist = this.spec.knockback * (1 + (this.towerLevel - 1) * 0.4);
           this.target.x = Math.max(WAYPOINTS[0].x, this.target.x - kbDist);
           this.target.speed = Math.max(0.2, this.target.speed * 0.6);
+        }
+
+        // 극한 블랙홀: 주위 적을 폭심지로 강하게 흡인
+        if (this.spec.vortex) {
+          const vortexRadius = 90 + this.towerLevel * 20;
+          enemies.forEach(e => {
+            const d = Math.hypot(e.x - this.x, e.y - this.y);
+            if (d <= vortexRadius && d > 5) {
+              e.x += ((this.x - e.x) / d) * 16;
+              e.y += ((this.y - e.y) / d) * 16;
+              e.speed = Math.max(0.2, e.speed * 0.5);
+              e.hp -= dmg * 0.45;
+            }
+          });
+          spawnExplosion(this.x, this.renderY || this.y, "#818cf8", 22);
         }
 
         if (this.spec.symbol === "σ") {
@@ -1725,6 +1802,7 @@
         let minDist = this.effectiveRange;
 
         for (let e of enemies) {
+          if (e.isPhased && this.type !== 'quadratic' && this.type !== 'circle') continue;
           const d = Math.hypot(e.x - this.x, e.y - this.y);
           if (d <= minDist) {
             target = e;
@@ -1745,6 +1823,13 @@
             if (Math.random() < 0.25) {
               spawnExplosion(target.x, target.y, this.spec.color, 2);
             }
+          }
+        } else if (this.type === 'log') {
+          this.beamTarget = target;
+          if (target) {
+            target.hp -= this.effectiveDamage;
+            target.decayStacks = Math.min(10, (target.decayStacks || 0) + 0.05);
+            target.hitFlash = 1;
           }
         } else if (this.type === 'circle') {
           if (this.cooldown <= 0) {
@@ -1814,14 +1899,12 @@
           ctx.fillRect(10 - this.recoil, -3, 24, 6);
           ctx.strokeStyle = this.spec.color;
           ctx.strokeRect(10 - this.recoil, -3, 24, 6);
-        } else if (this.type === 'quadratic') {
+        } else if (this.type === 'quadratic' || this.type === 'stat') {
           ctx.fillRect(6 - this.recoil, -6, 18, 12);
-        } else if (this.type === 'circle') {
+        } else if (this.type === 'circle' || this.type === 'lim') {
           ctx.beginPath();
           ctx.arc(0, 0, 15, 0, Math.PI * 2);
           ctx.stroke();
-        } else if (this.type === 'stat') {
-          ctx.fillRect(7 - this.recoil, -6, 18, 12);
         } else {
           ctx.fillRect(6 - this.recoil, -4, 12, 8);
         }
@@ -1849,9 +1932,9 @@
 
         ctx.restore();
 
-        if (this.type === 'root' && this.beamTarget && this.beamTarget.hp > 0) {
+        if ((this.type === 'root' || this.type === 'log') && this.beamTarget && this.beamTarget.hp > 0) {
           ctx.save();
-          ctx.strokeStyle = this.level === 3 ? "rgba(168, 85, 247, 0.9)" : "rgba(56, 189, 248, 0.85)";
+          ctx.strokeStyle = this.type === 'log' ? "rgba(99, 102, 241, 0.85)" : (this.level === 3 ? "rgba(168, 85, 247, 0.9)" : "rgba(56, 189, 248, 0.85)");
           ctx.lineWidth = (3 + this.level) + Math.sin(Date.now() * 0.02) * 1.5;
           ctx.shadowColor = this.spec.color;
           ctx.shadowBlur = 12;
@@ -1971,20 +2054,35 @@
       updateUI();
       document.getElementById('btn-start-wave').disabled = true;
 
-      const totalEnemies = 9 + currentWave * 3;
+      // 60웨이브에 맞춰 점진적으로 풍성해지는 몬스터 수량
+      const totalEnemies = 12 + Math.min(28, Math.floor(currentWave * 0.5));
       let spawned = 0;
+      const isBossWave = (currentWave % 10 === 0);
 
       function spawnEnemy() {
+        // 매 10웨이브마다 보스 타이탄 1기 필수 스폰
+        if (isBossWave && spawned === 0) {
+          enemies.push(new Enemy('boss', currentWave));
+          return;
+        }
+
         const r = Math.random();
         let type = 'normal';
 
-        if (currentWave >= 17) {
+        if (currentWave >= 28) {
+          if (r < 0.22) type = 'phantom';
+          else if (r < 0.42) type = 'swarm';
+          else if (r < 0.60) type = 'shield';
+          else if (r < 0.78) type = 'rusher';
+          else if (r < 0.90) type = 'golem';
+          else type = 'fast';
+        } else if (currentWave >= 20) {
           if (r < 0.28) type = 'swarm';
           else if (r < 0.48) type = 'shield';
           else if (r < 0.68) type = 'rusher';
           else if (r < 0.82) type = 'golem';
           else type = 'fast';
-        } else if (currentWave >= 13) {
+        } else if (currentWave >= 14) {
           if (r < 0.3) type = 'shield';
           else if (r < 0.5) type = 'rusher';
           else if (r < 0.7) type = 'regen';
@@ -2023,7 +2121,7 @@
         }
         spawnEnemy();
         spawned++;
-      }, Math.max(550, 950 - currentWave * 12));
+      }, Math.max(520, 920 - currentWave * 7));
     }
 
     function gameLoop() {
@@ -2134,9 +2232,8 @@
         }
 
         if (e.hp <= 0) {
-          gold += 15;
-          currentUser.score += 25;
-          spawnExplosion(e.x, e.y, e.color, 16);
+          currentUser.score += (e.type === 'boss' ? 200 : 35);
+          spawnExplosion(e.x, e.y, e.color, e.type === 'boss' ? 36 : 16);
           enemies.splice(i, 1);
           updateUI();
           continue;
@@ -2187,9 +2284,6 @@
         if (leakCount === 0) earnedStars = 3;
         else if (leakCount === 1) earnedStars = 2;
 
-        gold += 100;
-        saveUserGold();
-
         const prevStars = stageStars[currentWave] || 0;
         let starGain = 0;
         if (earnedStars > prevStars) {
@@ -2204,7 +2298,7 @@
 
         title.innerText = `웨이브 ${currentWave} 방어 성공!`;
         stars.innerText = "★".repeat(earnedStars) + "☆".repeat(3 - earnedStars);
-        desc.innerText = `${randomPraise}\n\n성벽 통과 몬스터: ${leakCount}마리\n획득 별점: ${earnedStars}개${starGain > 0 ? ` (누적 별 +${starGain}개 갱신!)` : ' (최고 기록 유지)'}\n클리어 승리 보너스: +100G 획득!\n현재 보유 골드: ${gold}G`;
+        desc.innerText = `${randomPraise}\n\n성벽 통과 몬스터: ${leakCount}마리\n획득 별점: ${earnedStars}개${starGain > 0 ? ` (누적 별 +${starGain}개 갱신!)` : ' (최고 기록 유지)'}\n현재 보유 골드: ${gold}G (퀴즈를 풀어 포탑을 강화하세요!)`;
         nextBtn.innerText = "다음 웨이브 준비";
         nextBtn.onclick = () => {
           modal.classList.add('hidden');
@@ -2215,7 +2309,7 @@
       } else {
         title.innerText = `웨이브 ${currentWave} 방어 실패!`;
         stars.innerText = "☆☆☆";
-        desc.innerText = `몬스터 3마리가 성벽을 통과했습니다!\n상단 [📖 상성 도감]을 확인하고 포탑을 보강해 재도전하세요.\n(현재 잔여 골드: ${gold}G)`;
+        desc.innerText = `몬스터 3마리가 성벽을 통과했습니다!\n상단 [📖 상성 도감]을 확인하고 퀴즈로 골드를 모아 재도전하세요.\n(현재 잔여 골드: ${gold}G)`;
         nextBtn.innerText = "웨이브 재도전";
         nextBtn.onclick = () => {
           modal.classList.add('hidden');
@@ -2239,9 +2333,6 @@
       document.getElementById('val-stars').innerText = currentUser.totalStars;
     }
 
-    /* ========================================================
-       5. 로비 네비게이션
-       ======================================================== */
     function showLobby() {
       document.getElementById('stage-select-view').classList.remove('hidden');
       document.getElementById('game-play-view').classList.add('hidden');
@@ -2271,10 +2362,16 @@
         else if (starsEarned === 2) starDisplay = "★★☆";
         else if (starsEarned === 1) starDisplay = "★☆☆";
 
+        const isBoss = (i % 10 === 0);
+        if (isBoss && isUnlocked) {
+          card.style.borderColor = "#fda4af";
+          card.style.background = "#2a0815";
+        }
+
         card.innerHTML = `
-          <div style="font-size: 1rem; font-weight: bold; color: ${isUnlocked ? 'var(--accent)' : '#64748b'};">웨이브 ${i}</div>
-          <div style="font-size: 0.95rem; color: var(--gold); margin: 6px 0;">${isUnlocked ? starDisplay : '🔒'}</div>
-          <div style="font-size: 0.72rem; color: #94a3b8;">${isUnlocked ? (starsEarned > 0 ? '클리어 완료' : '도전 가능') : '잠김'}</div>
+          <div style="font-size: 0.88rem; font-weight: bold; color: ${isUnlocked ? (isBoss ? '#fda4af' : 'var(--accent)') : '#64748b'};">${isBoss ? '👑 보스 ' : 'W'}${i}</div>
+          <div style="font-size: 0.85rem; color: var(--gold); margin: 3px 0;">${isUnlocked ? starDisplay : '🔒'}</div>
+          <div style="font-size: 0.68rem; color: #94a3b8;">${isUnlocked ? (starsEarned > 0 ? '완료' : '도전') : '잠김'}</div>
         `;
 
         if (isUnlocked) {
@@ -2285,22 +2382,23 @@
         container.appendChild(card);
       }
 
+      // 무한 모드 (별 150개 달성 시 개방)
       const endlessCard = document.createElement('div');
-      const isEndlessUnlocked = currentUser.totalStars >= 60;
+      const isEndlessUnlocked = currentUser.totalStars >= 150;
       endlessCard.className = `stage-card ${isEndlessUnlocked ? '' : 'locked'}`;
       endlessCard.style.border = isEndlessUnlocked ? "2px solid var(--purple)" : "2px dashed #475569";
       endlessCard.style.background = isEndlessUnlocked ? "linear-gradient(145deg, #1e1138, #0a1120)" : "#070b14";
 
       endlessCard.innerHTML = `
-        <div style="font-size: 1.05rem; font-weight: bold; color: ${isEndlessUnlocked ? 'var(--purple)' : '#64748b'};">👑 무한 웨이브</div>
-        <div style="font-size: 0.85rem; color: var(--gold); margin: 6px 0;">${isEndlessUnlocked ? '★ 무한 랭킹전 ★' : '🔒 별 60개 필요'}</div>
-        <div style="font-size: 0.72rem; color: #94a3b8;">${isEndlessUnlocked ? '한계 돌파 도전!' : `(현재: ${currentUser.totalStars}/60★)`}</div>
+        <div style="font-size: 0.92rem; font-weight: bold; color: ${isEndlessUnlocked ? 'var(--purple)' : '#64748b'};">👑 무한 모드</div>
+        <div style="font-size: 0.78rem; color: var(--gold); margin: 3px 0;">${isEndlessUnlocked ? '★ 무한 랭킹전 ★' : '🔒 별 150개'}</div>
+        <div style="font-size: 0.68rem; color: #94a3b8;">${isEndlessUnlocked ? '한계 돌파' : `(${currentUser.totalStars}/150★)`}</div>
       `;
 
       if (isEndlessUnlocked) {
-        endlessCard.onclick = () => enterStage(21);
+        endlessCard.onclick = () => enterStage(61);
       } else {
-        endlessCard.onclick = () => showToast("1~20웨이브에서 별 3개씩 총 60개를 모아야 무한 모드가 해금됩니다!", "var(--danger)");
+        endlessCard.onclick = () => showToast("누적 별점 150개를 모아야 무한 모드가 해금됩니다!", "var(--danger)");
       }
       container.appendChild(endlessCard);
     }
@@ -2329,7 +2427,7 @@
       updateTowerUnlockUI();
       prepareNextWave();
       updateUI();
-      showToast(`웨이브 ${currentWave} 진입! (보유 골드: ${gold}G 유지)`);
+      showToast(`웨이브 ${currentWave} 진입! (보유 골드: ${gold}G)`);
     }
 
     function exitToLobby() {
