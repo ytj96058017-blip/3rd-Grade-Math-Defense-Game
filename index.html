@@ -1508,7 +1508,8 @@
         this.kbImmuneTimer = 0; // 넉백 무한 루프 방지 면역 쿨타임
 
         if (type === 'boss') {
-          this.maxHp *= (wave > 60 ? 4.5 : 5.5);
+          // 무한 모드에서는 기본 체력 스케일링이 이미 매우 크므로 보스 배율을 3.0배로 안정화
+          this.maxHp *= (wave > 60 ? 3.0 : 5.5);
           this.baseSpeed = 0.55;
           this.radius = 26;
           this.color = "#fda4af";
@@ -2480,7 +2481,7 @@
           enemies.push(new Enemy('boss', currentWave));
           return;
         }
-        // 쌍둥이 보스 출현 (중간 지점에서 2번째 보스 추가 출격)
+        // 쌍둥이 보스 출현: 오직 끝자리가 0인 웨이브(W50, W60, W70, W80, W90, W100...)에서만 딱 2번째 보스 1회 추가 소환
         if (isTwinBoss && spawned === Math.floor(totalEnemies * 0.45)) {
           enemies.push(new Enemy('boss', currentWave));
           return;
@@ -2490,16 +2491,13 @@
         let type = 'normal';
 
         if (isEndless) {
-          // [무한 모드 전용 하이퍼 복합 로스터]
-          // 고웨이브(W75+)에서는 몬스터 틈새에서 미니 타이탄 보스가 깜짝 출현할 확률(5%) 부여
-          if (currentWave >= 75 && r < 0.05) {
-            type = 'boss';
-          } else if (r < 0.20) type = 'phantom'; // 은신
-          else if (r < 0.38) type = 'shield';  // 쉴드
-          else if (r < 0.54) type = 'golem';   // 초단단 중장갑
-          else if (r < 0.70) type = 'rusher';  // 가속 돌진
-          else if (r < 0.85) type = 'regen';   // 자가 힐
-          else type = 'fast';
+          // [무한 모드 하이퍼 복합 로스터] 통제되지 않는 랜덤 보스 소환은 영구 제거!
+          if (r < 0.20) type = 'phantom';      // 은신 위상체
+          else if (r < 0.40) type = 'shield';  // 쉴드체
+          else if (r < 0.58) type = 'golem';   // 초단단 중장갑
+          else if (r < 0.74) type = 'rusher';  // 가속 돌진체
+          else if (r < 0.88) type = 'regen';   // 자가 힐 재생체
+          else type = 'fast';                  // 고속 비행체
         } else if (currentWave >= 46 && currentWave <= 50) {
           // 기믹 3: 허수 왜곡
           if (r < 0.45) type = 'phantom';
