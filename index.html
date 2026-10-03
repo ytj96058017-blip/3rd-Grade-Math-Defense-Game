@@ -1483,6 +1483,7 @@
         this.decayStacks = 0;
         this.phaseTimer = 0;
         this.isPhased = false;
+        this.kbImmuneTimer = 0; // 넉백 무한 루프 방지 면역 쿨타임
 
         if (type === 'boss') {
           this.maxHp *= 5.5;
@@ -1559,6 +1560,7 @@
       update() {
         this.animTick += 0.1;
         if (this.hitFlash > 0) this.hitFlash--;
+        if (this.kbImmuneTimer > 0) this.kbImmuneTimer--;
 
         if (this.type === 'phantom') {
           this.phaseTimer = (this.phaseTimer + 1) % 180;
@@ -1742,26 +1744,71 @@
         const lvlMultiplier = this.towerLevel === 4 ? 3.4 : (this.towerLevel === 3 ? 2.3 : (this.towerLevel === 2 ? 1.55 : 1.0));
         let dmg = this.spec.damage * lvlMultiplier;
 
-        if (this.spec.symbol === "√" && this.target.type === "golem") dmg *= 2.0;
-        if (this.spec.symbol === "(x)" && this.target.type === "slime") dmg *= 1.8;
-        if (this.spec.symbol === "÷" && this.target.type === "golem") dmg *= 2.5;
-        if (this.spec.symbol === "sin" && (this.target.type === "fast" || this.target.type === "rusher")) dmg *= 2.5;
+        // [비상성 내성 및 카운터 특효 시스템]
+        // 1. 중장갑 골렘: 비상성 공격 피해 50% 경감, 유리화포/루트빔은 관통 및 특효
+        if (this.target.type === "golem") {
+          if (this.spec.symbol === "÷") {
+            dmg *= 2.5; // 유리화포 2.5배 관통 폭딜
+          } else if (this.spec.symbol === "√") {
+            dmg *= 2.0; // 루트빔 2.0배
+          } else {
+            dmg *= 0.5; // 비상성 포탑의 공격은 장갑에 튕겨 50% 경감!
+          }
+        }
 
-        // D 판별 레이저
+        // 2. 분열 슬라임: 인수분해포 외 일반 사격 35% 충격 흡수 경감
+        if (this.target.type === "slime") {
+          if (this.spec.symbol === "(x)") {
+            dmg *= 1.9; // 인수분해포 1.9배
+          } else {
+            dmg *= 0.65; // 비상성 공격 35% 흡수 경감
+          }
+        }
+
+        // 3. 고속 비행체: 스나이퍼 외 일반 지상 사격 35% 회피 경감
+        if (this.target.type === "fast") {
+          if (this.spec.symbol === "sin") {
+            dmg *= 2.5; // 스나이퍼 일격 격추
+          } else {
+            dmg *= 0.65; // 비상성 공격 35% 회피 경감
+          }
+        }
+
+        // 4. 가속 돌진체
+        if (this.target.type === "rusher") {
+          if (this.spec.symbol === "sin") dmg *= 2.0;
+        }
+
+        // 5. D 판별 레이저: 체력 비율 비례 극딜
         if (this.spec.symbol === "D") {
           const ratio = this.target.hp / this.target.maxHp;
           dmg *= (1.0 + ratio * (this.towerLevel === 4 ? 2.8 : 1.8));
           if (this.towerLevel === 4 && ratio < 0.25) {
-            // Lv.4 처형 폭발
-            dmg *= 2.5;
+            dmg *= 2.5; // Lv.4 처형 폭발
           }
         }
 
-        // tan 넉백
+        // 6. 탄젠트(tan) 기울기 캐논 넉백 밸런스 정상화
         if (this.spec.knockback) {
-          const kbDist = this.spec.knockback * (1 + (this.towerLevel - 1) * 0.4);
-          this.target.x = Math.max(WAYPOINTS[0].x, this.target.x - kbDist);
-          this.target.speed = Math.max(0.2, this.target.speed * 0.55);
+          // 보스는 넉백 100% 면역! 골렘은 75% 무게 저항!
+          if (this.target.type === "boss") {
+            // 보스는 꿈쩍도 하지 않음
+          } else if (this.target.kbImmuneTimer <= 0) {
+            let kbDist = (this.spec.knockback * 0.7) * (1 + (this.towerLevel - 1) * 0.3);
+            if (this.target.type === "golem") kbDist *= 0.25; // 골렘은 무게 때문에 살짝만 밀림
+            
+            // 현재 이동 방향의 반대(역방향)로 밀어냄
+            const currentWp = WAYPOINTS[this.target.wpIndex] || WAYPOINTS[0];
+            const nextWp = WAYPOINTS[this.target.wpIndex + 1] || currentWp;
+            const dirX = nextWp.x - currentWp.x;
+            const dirY = nextWp.y - currentWp.y;
+            const len = Math.hypot(dirX, dirY) || 1;
+            
+            this.target.x = Math.max(WAYPOINTS[0].x, this.target.x - (dirX / len) * kbDist);
+            this.target.y = this.target.y - (dirY / len) * kbDist;
+            this.target.speed = Math.max(0.25, this.target.speed * 0.6);
+            this.target.kbImmuneTimer = 70; // 약 1.2초간 넉백 면역 부여 (무한 넉백 꼼수 차단)
+          }
         }
 
         // lim 블랙홀
@@ -1770,8 +1817,9 @@
           enemies.forEach(e => {
             const d = Math.hypot(e.x - this.x, e.y - this.y);
             if (d <= vortexRadius && d > 5) {
-              e.x += ((this.x - e.x) / d) * (this.towerLevel === 4 ? 24 : 16);
-              e.y += ((this.y - e.y) / d) * (this.towerLevel === 4 ? 24 : 16);
+              const pullPower = (e.type === "boss" ? 6 : (e.type === "golem" ? 10 : (this.towerLevel === 4 ? 22 : 15)));
+              e.x += ((this.x - e.x) / d) * pullPower;
+              e.y += ((this.y - e.y) / d) * pullPower;
               e.speed = Math.max(0.2, e.speed * 0.4);
               e.hp -= dmg * (this.towerLevel === 4 ? 0.6 : 0.45);
             }
@@ -1785,11 +1833,17 @@
           dmg *= (1 + crowd * (this.towerLevel === 4 ? 0.6 : 0.4));
         }
 
-        // 실드 감산 (유리화포 Lv.4는 실드 무시)
+        // 실드 감산 (테슬라는 실드에 2.5배 특효, 비상성은 실드에 60% 피해 흡수 경감)
         if (this.spec.symbol === "÷" && this.towerLevel === 4) {
-          this.target.hp -= dmg;
+          this.target.hp -= dmg; // 유리화포 Lv.4는 실드 무시 관통
         } else if (this.target.shield > 0) {
-          this.target.shield -= dmg;
+          let shieldDmg = dmg;
+          if (this.spec.symbol === "○") {
+            shieldDmg *= 2.5; // 원주각 테슬라의 쉴드 일격 파괴!
+          } else {
+            shieldDmg *= 0.4; // 비상성 포탑의 공격은 쉴드가 60% 흡수 경감!
+          }
+          this.target.shield -= shieldDmg;
           if (this.target.shield < 0) {
             this.target.hp += this.target.shield;
             this.target.shield = 0;
@@ -1926,7 +1980,9 @@
         if (this.type === 'root') {
           this.beamTarget = target;
           if (target) {
-            target.hp -= this.effectiveDamage;
+            let beamDmg = this.effectiveDamage;
+            if (target.type === "golem") beamDmg *= 2.0; // 골렘 장갑 용해 2배
+            target.hp -= beamDmg;
             target.speed = Math.max(0.3, target.speed * (this.level === 4 ? 0.88 : 0.95));
             target.hitFlash = 1;
             if (Math.random() < 0.25) {
@@ -1938,7 +1994,7 @@
               let chains = 0;
               enemies.forEach(e2 => {
                 if (e2 !== target && chains < 2 && Math.hypot(e2.x - target.x, e2.y - target.y) <= 80) {
-                  e2.hp -= this.effectiveDamage * 0.7;
+                  e2.hp -= beamDmg * 0.7;
                   e2.hitFlash = 1;
                   chains++;
                 }
