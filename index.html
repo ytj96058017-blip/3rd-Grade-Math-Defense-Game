@@ -124,7 +124,7 @@
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
       <div>
         <h2 style="font-size: 1.25rem; color: var(--accent);">🗺️ 60 웨이브 작전 지도</h2>
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px;">한 달 동안 60개 웨이브를 정복하고 수학 마스터에 도전하세요! (별 150개 달성 시 무한 모드 개방)</p>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px;">한 달 동안 60개 웨이브를 정복하고 수학 마스터에 도전하세요! (별 180개 완전 정복 시 무한 모드 개방)</p>
       </div>
       <div style="text-align: right;">
         <div style="font-size: 0.95rem; font-weight: bold; color: var(--gold);">
@@ -2391,23 +2391,23 @@
         container.appendChild(card);
       }
 
-      // 무한 모드 (별 150개 달성 시 개방)
+      // 무한 모드 (별 180개 달성 시 개방)
       const endlessCard = document.createElement('div');
-      const isEndlessUnlocked = currentUser.totalStars >= 150;
+      const isEndlessUnlocked = currentUser.totalStars >= 180;
       endlessCard.className = `stage-card ${isEndlessUnlocked ? '' : 'locked'}`;
       endlessCard.style.border = isEndlessUnlocked ? "2px solid var(--purple)" : "2px dashed #475569";
       endlessCard.style.background = isEndlessUnlocked ? "linear-gradient(145deg, #1e1138, #0a1120)" : "#070b14";
 
       endlessCard.innerHTML = `
         <div style="font-size: 0.92rem; font-weight: bold; color: ${isEndlessUnlocked ? 'var(--purple)' : '#64748b'};">👑 무한 모드</div>
-        <div style="font-size: 0.78rem; color: var(--gold); margin: 3px 0;">${isEndlessUnlocked ? '★ 무한 랭킹전 ★' : '🔒 별 150개'}</div>
-        <div style="font-size: 0.68rem; color: #94a3b8;">${isEndlessUnlocked ? '한계 돌파' : `(${currentUser.totalStars}/150★)`}</div>
+        <div style="font-size: 0.78rem; color: var(--gold); margin: 3px 0;">${isEndlessUnlocked ? '★ 무한 랭킹전 ★' : '🔒 별 180개 필요'}</div>
+        <div style="font-size: 0.68rem; color: #94a3b8;">${isEndlessUnlocked ? '한계 돌파' : `(${currentUser.totalStars}/180★)`}</div>
       `;
 
       if (isEndlessUnlocked) {
         endlessCard.onclick = () => enterStage(61);
       } else {
-        endlessCard.onclick = () => showToast("누적 별점 150개를 모아야 무한 모드가 해금됩니다!", "var(--danger)");
+        endlessCard.onclick = () => showToast("60개 웨이브를 모두 완벽 클리어(★ 180개)해야 무한 모드가 개방됩니다!", "var(--danger)");
       }
       container.appendChild(endlessCard);
     }
