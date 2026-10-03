@@ -1486,8 +1486,16 @@
         this.baseSpeed = 0.98;
         this.speed = this.baseSpeed;
         
-        // 60웨이브 완만 상승 곡선
-        this.maxHp = (180 + wave * 55) * (1 + (wave - 1) * 0.045);
+        // 60웨이브 완만 상승 곡선 & 61웨이브 이상 무한 모드 기하급수(지수) 체력 스케일링
+        if (wave <= 60) {
+          this.maxHp = (180 + wave * 55) * (1 + (wave - 1) * 0.045);
+        } else {
+          // 61웨이브부터는 풀각성 22타워에 맞서 체력이 가파르게 상승 (W70: 3배, W80: 7배, W90: 15배, W100: 30배)
+          const base60Hp = (180 + 60 * 55) * (1 + 59 * 0.045); // 약 12,700 HP
+          const endlessStep = wave - 60;
+          this.maxHp = base60Hp * Math.pow(1.10, endlessStep) + (endlessStep * 350);
+        }
+
         this.radius = 15;
         this.color = "#ef4444";
         this.label = "";
@@ -1500,7 +1508,7 @@
         this.kbImmuneTimer = 0; // 넉백 무한 루프 방지 면역 쿨타임
 
         if (type === 'boss') {
-          this.maxHp *= 5.5;
+          this.maxHp *= (wave > 60 ? 4.5 : 5.5);
           this.baseSpeed = 0.55;
           this.radius = 26;
           this.color = "#fda4af";
@@ -1544,7 +1552,6 @@
         } else if (type === 'shield') {
           this.baseSpeed = 0.85;
           this.maxHp *= 2.0;
-          this.radius = 18;
           this.shield = this.maxHp * 0.65;
           this.color = "#3b82f6";
           this.label = "⊙";
@@ -1565,6 +1572,13 @@
         } else if (wave >= 41 && wave <= 45) {
           // 차원 전자기장: 모든 적에게 실드 부여
           if (this.shield <= 0) this.shield = this.maxHp * 0.35;
+        } else if (wave > 60) {
+          // 무한 모드: 점진적 기본 속도 및 저항력 강화
+          const speedFactor = 1 + Math.min(0.35, (wave - 60) * 0.012);
+          this.baseSpeed *= speedFactor;
+          if (wave >= 75 && this.shield <= 0 && Math.random() < 0.4) {
+            this.shield = this.maxHp * 0.4; // 고위 무한 웨이브 적 일부 실드 자동 무장
+          }
         }
 
         this.speed = this.baseSpeed;
@@ -1841,10 +1855,10 @@
           spawnExplosion(this.x, this.renderY || this.y, "#818cf8", 22);
         }
 
-        // σ 분산포
+        // σ 분산포 (군집 비례 과다 중첩 캡 적용 - 최대 2.2배로 억제하여 단체 증발 방지)
         if (this.spec.symbol === "σ") {
-          const crowd = enemies.filter(e => Math.hypot(e.x - this.x, e.y - this.y) <= 85).length;
-          dmg *= (1 + crowd * (this.towerLevel === 4 ? 0.6 : 0.4));
+          const crowd = Math.min(5, enemies.filter(e => Math.hypot(e.x - this.x, e.y - this.y) <= 85).length);
+          dmg *= (1 + crowd * (this.towerLevel === 4 ? 0.25 : 0.2));
         }
 
         // 실드 감산 (테슬라는 실드에 2.5배 특효, 비상성은 실드에 60% 피해 흡수 경감)
@@ -1869,15 +1883,15 @@
         if (this.spec.splash) {
           const splashRange = this.spec.splash * (1 + (this.towerLevel - 1) * 0.2);
           enemies.forEach(e => {
-            if (Math.hypot(e.x - this.x, e.y - this.y) <= splashRange) {
-              e.hp -= dmg * 0.75;
+            if (e !== this.target && Math.hypot(e.x - this.x, e.y - this.y) <= splashRange) {
+              e.hp -= dmg * 0.55; // 중심 타겟 외 주변 몬스터 대미지 55%로 감쇠 (단체 증발 방지)
               e.hitFlash = 3;
             }
           });
-          spawnExplosion(this.x, this.renderY || this.y, this.towerLevel === 4 ? "var(--awakened)" : this.spec.color, 18);
+          spawnExplosion(this.x, this.renderY || this.y, this.towerLevel === 4 ? CANVAS_COLORS.awakened : this.spec.color, 18);
         } else {
           this.target.hitFlash = 4;
-          spawnExplosion(this.x, this.renderY || this.y, this.towerLevel === 4 ? "var(--awakened)" : this.spec.color, 8);
+          spawnExplosion(this.x, this.renderY || this.y, this.towerLevel === 4 ? CANVAS_COLORS.awakened : this.spec.color, 8);
         }
       }
 
@@ -2374,20 +2388,26 @@
       // 몬스터 수량 스케일링
       const isEndless = (currentWave > 60);
       const totalEnemies = isEndless 
-        ? 25 + Math.floor((currentWave - 60) * 1.5)
+        ? 20 + Math.min(35, Math.floor((currentWave - 60) * 1.8))
         : 12 + Math.min(28, Math.floor(currentWave * 0.5));
 
       let spawned = 0;
-      const isBossWave = (!isEndless && currentWave % 10 === 0);
-      const isTwinBoss = (!isEndless && (currentWave === 50 || currentWave === 60));
+
+      // 보스 출현 조건: 일반 60웨이브뿐 아니라, 무한 모드에서도 심심치 않게 대형 보스 출현!
+      // - 일반 모드: 매 10웨이브마다 보스 (W10, W20, W30, W40, W50, W60)
+      // - 무한 모드: 매 5웨이브마다 단일 보스 (W65, W75, W85, W95...)
+      //             매 10웨이브마다 쌍둥이 타이탄 보스 2기 (W70, W80, W90, W100...)
+      const isBossWave = (currentWave % 10 === 0) || (isEndless && currentWave % 5 === 0);
+      const isTwinBoss = (currentWave === 50 || currentWave === 60) || (isEndless && currentWave % 10 === 0);
 
       function spawnEnemy() {
-        // 보스 웨이브 타이탄 소환
+        // 보스 웨이브 타이탄 소환 (첫 번째 선두 보스)
         if (isBossWave && spawned === 0) {
           enemies.push(new Enemy('boss', currentWave));
           return;
         }
-        if (isTwinBoss && spawned === Math.floor(totalEnemies * 0.5)) {
+        // 쌍둥이 보스 출현 (중간 지점에서 2번째 보스 추가 출격)
+        if (isTwinBoss && spawned === Math.floor(totalEnemies * 0.45)) {
           enemies.push(new Enemy('boss', currentWave));
           return;
         }
@@ -2395,7 +2415,18 @@
         const r = Math.random();
         let type = 'normal';
 
-        if (currentWave >= 46 && currentWave <= 50) {
+        if (isEndless) {
+          // [무한 모드 전용 하이퍼 복합 로스터]
+          // 고웨이브(W75+)에서는 몬스터 틈새에서 미니 타이탄 보스가 깜짝 출현할 확률(5%) 부여
+          if (currentWave >= 75 && r < 0.05) {
+            type = 'boss';
+          } else if (r < 0.20) type = 'phantom'; // 은신
+          else if (r < 0.38) type = 'shield';  // 쉴드
+          else if (r < 0.54) type = 'golem';   // 초단단 중장갑
+          else if (r < 0.70) type = 'rusher';  // 가속 돌진
+          else if (r < 0.85) type = 'regen';   // 자가 힐
+          else type = 'fast';
+        } else if (currentWave >= 46 && currentWave <= 50) {
           // 기믹 3: 허수 왜곡
           if (r < 0.45) type = 'phantom';
           else if (r < 0.75) type = 'slime';
