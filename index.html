@@ -577,6 +577,34 @@
     </div>
   </div>
 
+  <!-- 무한 모드 진입 선택 모달 -->
+  <div class="modal-overlay hidden" id="modal-endless-select">
+    <div class="modal-card">
+      <h2 style="color:var(--awakened);">👑 무한 모드 작전 선택</h2>
+      <p style="font-size: 0.84rem; color: #94a3b8; margin-top: 4px; margin-bottom: 14px;">
+        원하는 시작 지점을 선택하세요.<br>
+        (어떤 방식을 선택해도 최고 도달 웨이브와 점수가 유지·갱신됩니다)
+      </p>
+
+      <div style="background: #090e18; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 14px; text-align: left; font-size: 0.82rem;">
+        <div style="color: #cbd5e1; margin-bottom: 4px;">🏆 내 최고 도달: <b style="color: var(--awakened);" id="modal-endless-max-wave">W61</b></div>
+        <div style="color: #cbd5e1;">⭐ 누적 무한 점수: <b style="color: var(--gold);" id="modal-endless-max-score">0점</b></div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn btn-awakened" id="btn-endless-resume" style="padding: 10px; font-size: 0.9rem;" onclick="startEndlessAt(currentUser.endlessWave || 61)">
+          🚩 최고 기록 이어하기 (<span id="txt-endless-resume-wave">W61</span>부터)
+        </button>
+        <button class="btn btn-secondary" style="padding: 9px; font-size: 0.84rem;" onclick="startEndlessAt(61)">
+          🔄 61웨이브부터 처음 시작하기
+        </button>
+        <button class="btn btn-secondary" style="margin-top: 4px; padding: 6px; font-size: 0.76rem; color: #64748b;" onclick="closeEndlessModal()">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzWJmuqKc55A8bkXA6uYM0Mj_risVnXVHidcwkMAW81TiBCBEdj-sdIOD2_WC_PZi_Nw/exec";
 
@@ -1401,7 +1429,7 @@
       { id: 9, x: 435, y: 50, tower: null },
       { id: 10, x: 565, y: 50, tower: null },
       { id: 11, x: 565, y: 195, tower: null },
-      { id: 12, x: 565, y: 340, tower: null },
+      { id: 12, x: 575, y: 350, tower: null },
       { id: 13, x: 670, y: 50, tower: null },
       { id: 14, x: 670, y: 200, tower: null },
       { id: 15, x: 670, y: 320, tower: null },
@@ -1410,7 +1438,7 @@
       { id: 18, x: 160, y: 50, tower: null },
       { id: 19, x: 285, y: 50, tower: null },
       { id: 20, x: 355, y: 175, tower: null },
-      { id: 21, x: 630, y: 110, tower: null },
+      { id: 21, x: 355, y: 265, tower: null },
       { id: 22, x: 805, y: 50, tower: null }
     ];
 
@@ -2606,11 +2634,28 @@
       `;
 
       if (isEndlessUnlocked) {
-        endlessCard.onclick = () => enterStage(61);
+        endlessCard.onclick = () => openEndlessSelectModal();
       } else {
         endlessCard.onclick = () => showToast("60개 웨이브를 모두 완벽 클리어(★ 180개)해야 무한 모드가 개방됩니다!", "var(--danger)");
       }
       container.appendChild(endlessCard);
+    }
+
+    function openEndlessSelectModal() {
+      const maxW = Math.max(61, currentUser.endlessWave || 61);
+      document.getElementById('modal-endless-max-wave').innerText = `W${maxW}`;
+      document.getElementById('modal-endless-max-score').innerText = `${(currentUser.endlessScore || 0).toLocaleString()}점`;
+      document.getElementById('txt-endless-resume-wave').innerText = `W${maxW}`;
+      document.getElementById('modal-endless-select').classList.remove('hidden');
+    }
+
+    function closeEndlessModal() {
+      document.getElementById('modal-endless-select').classList.add('hidden');
+    }
+
+    function startEndlessAt(targetWave) {
+      closeEndlessModal();
+      enterStage(Math.max(61, targetWave));
     }
 
     function enterStage(waveNum) {
