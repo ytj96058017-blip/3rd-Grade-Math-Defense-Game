@@ -2749,6 +2749,8 @@
       if (isSuccess) {
         if (isEndless) {
           currentUser.endlessWave = Math.max(currentUser.endlessWave || 0, currentWave);
+          // [개인 최고 웨이브 즉시 갱신]
+          currentUser.maxWave = Math.max(currentUser.maxWave || 1, currentWave);
           title.innerText = `👑 무한 웨이브 ${currentWave} 정복!`;
           stars.innerText = "👑👑👑";
           desc.innerText = `한계 돌파 중! 축하합니다!\n현재 무한 점수: ${currentUser.endlessScore.toLocaleString()}점\n(보유 골드: ${gold}G로 다음 무한 웨이브를 대비하세요)`;
@@ -2766,14 +2768,15 @@
         let earnedStars = 1;
         if (leakCount === 0) earnedStars = 3;
         else if (leakCount === 1) earnedStars = 2;
+        e.draw();
+      }
 
-        const prevStars = stageStars[currentWave] || 0;
-        let starGain = 0;
-        if (earnedStars > prevStars) {
-          starGain = earnedStars - prevStars;
-          stageStars[currentWave] = earnedStars;
-          saveStageStars();
-        }
+      if (waveActive && spawnFinished && enemies.length === 0) {
+        endWave(true);
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
 
         recalculateTotalStars();
         currentUser.score += earnedStars * 500;
