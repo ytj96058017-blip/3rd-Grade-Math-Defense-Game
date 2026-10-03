@@ -1336,7 +1336,7 @@
       trig: { cost: 270, range: 1200, damage: 110, fireRate: 92, symbol: "sin", color: "#ec4899", name: "삼각 저격포", isGlobal: true, unlockStars: 10, awakeTier: 3, awakeReq: 135 },
       discr: { cost: 240, range: 190, damage: 45, fireRate: 50, symbol: "D", color: "#f97316", name: "판별 레이저", unlockStars: 12, awakeTier: 3, awakeReq: 135 },
       tan: { cost: 300, range: 180, damage: 40, fireRate: 56, symbol: "tan", color: "#14b8a6", name: "기울기 캐논", knockback: 22, unlockStars: 20, awakeTier: 3, awakeReq: 135 },
-      circle: { cost: 330, range: 145, damage: 34, fireRate: 44, symbol: "○", color: "#06b6d4", name: "원주각 테슬라", unlockStars: 30, awakeTier: 4, awakeReq: 155 },
+      circle: { cost: 330, range: 170, damage: 38, fireRate: 40, symbol: "○", color: "#06b6d4", name: "원주각 테슬라", unlockStars: 30, awakeTier: 4, awakeReq: 155 },
       stat: { cost: 370, range: 250, damage: 75, fireRate: 80, symbol: "σ", color: "#a855f7", name: "통계 분산포", splash: 95, unlockStars: 45, awakeTier: 4, awakeReq: 155 },
       log: { cost: 410, range: 200, damage: 1.0, fireRate: 1, symbol: "log", color: "#6366f1", name: "로그 디케이", decay: true, unlockStars: 65, awakeTier: 4, awakeReq: 155 },
       lim: { cost: 460, range: 260, damage: 145, fireRate: 95, symbol: "lim", color: "#818cf8", name: "극한 블랙홀", vortex: true, splash: 105, unlockStars: 90, awakeTier: 4, awakeReq: 155 }
@@ -1459,6 +1459,7 @@
     let enemies = [];
     let projectiles = [];
     let particles = [];
+    let lightningEffects = []; // 번개 아크 시각효과 배열
 
     function spawnExplosion(x, y, color, count = 12) {
       for (let i = 0; i < count; i++) {
@@ -1907,6 +1908,12 @@
         this.angle = 0;
         this.recoil = 0;
         this.beamTarget = null;
+        this.dischargeAnim = 0; // 테슬라 방전 링 애니메이션
+      }
+
+      get effectiveRange() {
+        const bonus = (this.type === 'circle' && this.level === 4) ? 0.35 : 0.15;
+        return this.spec.range * (1 + (this.level - 1) * bonus);
       }
 
       get effectiveRange() {
@@ -2023,21 +2030,51 @@
             target.hitFlash = 1;
           }
         } else if (this.type === 'circle') {
+          if (this.dischargeAnim > 0) this.dischargeAnim--;
           if (this.cooldown <= 0) {
-            let hitAny = false;
+            const hitEnemies = [];
             enemies.forEach(e => {
               if (Math.hypot(e.x - this.x, e.y - this.y) <= this.effectiveRange) {
-                e.hp -= this.effectiveDamage;
-                e.shield = Math.max(0, e.shield - this.effectiveDamage * 2.5);
-                e.hitFlash = 3;
-                e.speed = Math.max(0.3, e.speed * 0.8);
-                spawnExplosion(e.x, e.y, this.spec.color, 3);
-                hitAny = true;
+                hitEnemies.push(e);
               }
             });
-            if (hitAny) {
+
+            if (hitEnemies.length > 0) {
               this.cooldown = this.effectiveFireRate;
-              this.recoil = 5;
+              this.recoil = 6;
+              this.dischargeAnim = 12;
+
+              hitEnemies.forEach(e => {
+                let dmg = this.effectiveDamage;
+                if (this.level === 4) dmg *= 1.35; // 각성 시 35% 증폭
+
+                // 실드 분쇄 특효 2.5배
+                if (e.shield > 0) {
+                  e.shield -= dmg * 2.5;
+                  if (e.shield < 0) {
+                    e.hp += e.shield;
+                    e.shield = 0;
+                  }
+                } else {
+                  e.hp -= dmg;
+                }
+
+                e.hitFlash = 3;
+                e.speed = Math.max(0.2, e.speed * (this.level === 4 ? 0.6 : 0.75));
+                spawnExplosion(e.x, e.y, this.level === 4 ? CANVAS_COLORS.awakened : this.spec.color, 4);
+
+                // 번개 아크 시각 이펙트 등록
+                lightningEffects.push({
+                  x1: this.x,
+                  y1: this.y,
+                  x2: e.x,
+                  y2: e.y,
+                  color: this.level === 4 ? "#fda4af" : "#38bdf8",
+                  life: 8,
+                  maxLife: 8,
+                  segments: Math.floor(Math.random() * 3) + 4
+                });
+              });
             }
           }
         } else {
@@ -2156,6 +2193,19 @@
         }
 
         ctx.restore();
+
+        // 테슬라 방전 충격파 링 시각화
+        if (this.type === 'circle' && this.dischargeAnim > 0) {
+          ctx.save();
+          const p = 1 - (this.dischargeAnim / 12);
+          const currentRadius = this.effectiveRange * p;
+          ctx.strokeStyle = this.level === 4 ? "rgba(244, 63, 94, 0.7)" : "rgba(6, 182, 212, 0.6)";
+          ctx.lineWidth = Math.max(1, 3 * (1 - p));
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
 
         // 레이저 빔 렌더링
         if ((this.type === 'root' || this.type === 'log') && this.beamTarget && this.beamTarget.hp > 0) {
@@ -2503,6 +2553,36 @@
         ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
+      }
+
+      // 테슬라 번개 아크(Lightning Arc) 렌더링 루프
+      for (let i = lightningEffects.length - 1; i >= 0; i--) {
+        const ln = lightningEffects[i];
+        ctx.save();
+        ctx.strokeStyle = ln.color;
+        ctx.lineWidth = Math.max(1.2, 3.0 * (ln.life / ln.maxLife));
+        ctx.shadowColor = ln.color;
+        ctx.shadowBlur = 10;
+        ctx.globalAlpha = ln.life / ln.maxLife;
+
+        ctx.beginPath();
+        ctx.moveTo(ln.x1, ln.y1);
+        const segs = ln.segments;
+        for (let s = 1; s < segs; s++) {
+          const ratio = s / segs;
+          const mx = ln.x1 + (ln.x2 - ln.x1) * ratio;
+          const my = ln.y1 + (ln.y2 - ln.y1) * ratio;
+          const jitter = (Math.random() - 0.5) * 16;
+          ctx.lineTo(mx + jitter, my + jitter);
+        }
+        ctx.lineTo(ln.x2, ln.y2);
+        ctx.stroke();
+        ctx.restore();
+
+        ln.life--;
+        if (ln.life <= 0) {
+          lightningEffects.splice(i, 1);
+        }
       }
 
       for (let i = enemies.length - 1; i >= 0; i--) {
