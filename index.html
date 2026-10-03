@@ -609,6 +609,18 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzWJmuqKc55A8bkXA6uYM0Mj_risVnXVHidcwkMAW81TiBCBEdj-sdIOD2_WC_PZi_Nw/exec";
 
+    // Canvas 2D 전용 순수 색상 상수 (var() 문법 오류 방지)
+    const CANVAS_COLORS = {
+      awakened: "#f43f5e",
+      awakenedGlow: "#fb7185",
+      gold: "#facc15",
+      purple: "#a855f7",
+      accent: "#38bdf8",
+      danger: "#ef4444",
+      success: "#22c55e",
+      white: "#ffffff"
+    };
+
     let currentUser = {
       username: "",
       className: "",
@@ -1870,8 +1882,9 @@
 
       draw() {
         ctx.save();
-        ctx.fillStyle = this.towerLevel === 4 ? "var(--awakened)" : this.spec.color;
-        ctx.shadowColor = this.towerLevel === 4 ? "var(--awakened)" : this.spec.color;
+        const bulletColor = this.towerLevel === 4 ? CANVAS_COLORS.awakened : this.spec.color;
+        ctx.fillStyle = bulletColor;
+        ctx.shadowColor = bulletColor;
         ctx.shadowBlur = this.towerLevel === 4 ? 14 : 8;
         ctx.font = `bold ${this.towerLevel >= 3 ? 14 : 12}px monospace`;
         ctx.textAlign = "center";
@@ -1941,10 +1954,10 @@
           this.level++;
           
           if (this.level === 4) {
-            spawnExplosion(this.x, this.y, "var(--awakened)", 36);
+            spawnExplosion(this.x, this.y, CANVAS_COLORS.awakened, 36);
             showToast(`🔥 [초월 각성] ${this.spec.name} 포탑이 Lv.4로 진화했습니다!`, "var(--awakened)");
           } else {
-            spawnExplosion(this.x, this.y, "var(--gold)", 24);
+            spawnExplosion(this.x, this.y, CANVAS_COLORS.gold, 24);
             showToast(`✨ ${this.spec.name} 포탑이 Lv.${this.level}로 강화되었습니다!`, "var(--gold)");
           }
 
@@ -2030,6 +2043,14 @@
         } else {
           if (target && this.cooldown <= 0) {
             projectiles.push(new Projectile(this.x, this.y, target, this.spec, this.level));
+            // Lv.4 인수분해포는 2연발 동시 사격
+            if (this.type === 'factor' && this.level === 4) {
+              setTimeout(() => {
+                if (target && target.hp > 0) {
+                  projectiles.push(new Projectile(this.x, this.y, target, this.spec, this.level));
+                }
+              }, 70);
+            }
             this.cooldown = this.effectiveFireRate;
             this.recoil = 4;
           }
@@ -2041,7 +2062,7 @@
         ctx.translate(this.x, this.y);
 
         if (inspectedTower === this) {
-          ctx.strokeStyle = this.level === 4 ? "var(--awakened)" : "var(--gold)";
+          ctx.strokeStyle = this.level === 4 ? CANVAS_COLORS.awakened : CANVAS_COLORS.gold;
           ctx.lineWidth = 2.5;
           ctx.setLineDash([4, 4]);
           ctx.beginPath();
@@ -2050,9 +2071,21 @@
           ctx.setLineDash([]);
         }
 
-        // 포탑 베이스 색상 (Lv.4는 강렬한 초월 핑크글로우)
-        ctx.fillStyle = this.level === 4 ? "#3b0724" : (this.level === 3 ? "#2a1b4e" : (this.level === 2 ? "#1e3a5f" : "#1e293b"));
-        ctx.strokeStyle = this.level === 4 ? "var(--awakened)" : (this.level === 3 ? "var(--purple)" : (this.level === 2 ? "var(--gold)" : this.spec.color));
+        // Lv.4 초월 각성 시 외곽 아우라 회전 링
+        if (this.level === 4) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(244, 63, 94, 0.45)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 6]);
+          ctx.beginPath();
+          ctx.arc(0, 0, 24, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 포탑 베이스 육각형 (각성 시에도 고유 색상 테두리를 유지하여 구별력 확보)
+        ctx.fillStyle = this.level === 4 ? "#260618" : (this.level === 3 ? "#2a1b4e" : (this.level === 2 ? "#1e3a5f" : "#1e293b"));
+        ctx.strokeStyle = this.level === 4 ? CANVAS_COLORS.awakened : (this.level === 3 ? CANVAS_COLORS.purple : (this.level === 2 ? CANVAS_COLORS.gold : this.spec.color));
         ctx.lineWidth = this.level === 4 ? 3.5 : (this.level > 1 ? 3 : 2.5);
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
@@ -2068,59 +2101,89 @@
 
         ctx.rotate(this.angle);
         ctx.fillStyle = "#0f172a";
-        ctx.strokeStyle = this.level === 4 ? "var(--awakened)" : "#64748b";
+        ctx.strokeStyle = this.level === 4 ? this.spec.color : "#64748b";
         ctx.lineWidth = 2;
 
         if (this.type === 'factor') {
+          // 인수분해포: 쌍열 총열 (각성 시 총열에 고유 네온 발광)
+          ctx.fillStyle = this.level === 4 ? "#153026" : "#0f172a";
           ctx.fillRect(8 - this.recoil, -6, 14, 4);
           ctx.fillRect(8 - this.recoil, 2, 14, 4);
+          ctx.strokeStyle = this.spec.color;
+          ctx.strokeRect(8 - this.recoil, -6, 14, 4);
+          ctx.strokeRect(8 - this.recoil, 2, 14, 4);
         } else if (this.type === 'trig') {
           ctx.fillRect(10 - this.recoil, -3, 24, 6);
           ctx.strokeStyle = this.spec.color;
           ctx.strokeRect(10 - this.recoil, -3, 24, 6);
         } else if (this.type === 'quadratic' || this.type === 'stat') {
           ctx.fillRect(6 - this.recoil, -6, 18, 12);
+          ctx.strokeStyle = this.spec.color;
+          ctx.strokeRect(6 - this.recoil, -6, 18, 12);
         } else if (this.type === 'circle' || this.type === 'lim') {
           ctx.beginPath();
           ctx.arc(0, 0, 15, 0, Math.PI * 2);
           ctx.stroke();
         } else {
           ctx.fillRect(6 - this.recoil, -4, 12, 8);
+          ctx.strokeStyle = this.spec.color;
+          ctx.strokeRect(6 - this.recoil, -4, 12, 8);
         }
 
         ctx.rotate(-this.angle);
+        
+        // 포탑 중앙 심볼 코어
         ctx.fillStyle = "#090d16";
         ctx.beginPath();
         ctx.arc(0, 0, 11, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = this.level === 4 ? "var(--awakened)" : this.spec.color;
+        ctx.strokeStyle = this.level === 4 ? CANVAS_COLORS.awakened : this.spec.color;
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = this.level === 4 ? "var(--awakened)" : this.spec.color;
+        // 중앙 기호 텍스트 (초월 각성 시에도 포탑 고유의 기호가 밝은 흰색/네온으로 뚜렷하게 보임)
+        ctx.fillStyle = this.level === 4 ? "#ffffff" : this.spec.color;
         ctx.font = "bold 11px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(this.spec.symbol, 0, 1);
 
+        // 레벨 / 각성 뱃지 표시
         if (this.level > 1) {
-          ctx.fillStyle = this.level === 4 ? "var(--awakened)" : "var(--gold)";
+          ctx.fillStyle = this.level === 4 ? CANVAS_COLORS.awakened : CANVAS_COLORS.gold;
           ctx.font = "bold 9px sans-serif";
-          ctx.fillText(this.level === 4 ? "👑각성" : (this.level === 3 ? "★★★" : "★★"), 0, -17);
+          ctx.fillText(this.level === 4 ? "👑각성" : (this.level === 3 ? "★★★" : "★★"), 0, -20);
         }
 
         ctx.restore();
 
+        // 레이저 빔 렌더링
         if ((this.type === 'root' || this.type === 'log') && this.beamTarget && this.beamTarget.hp > 0) {
           ctx.save();
           ctx.strokeStyle = this.level === 4 ? "rgba(244, 63, 94, 0.95)" : (this.type === 'log' ? "rgba(99, 102, 241, 0.85)" : (this.level === 3 ? "rgba(168, 85, 247, 0.9)" : "rgba(56, 189, 248, 0.85)"));
           ctx.lineWidth = (3 + this.level) + Math.sin(Date.now() * 0.02) * 1.5;
-          ctx.shadowColor = this.level === 4 ? "var(--awakened)" : this.spec.color;
+          ctx.shadowColor = this.level === 4 ? CANVAS_COLORS.awakened : this.spec.color;
           ctx.shadowBlur = 12;
           ctx.beginPath();
           ctx.moveTo(this.x, this.y);
           ctx.lineTo(this.beamTarget.x, this.beamTarget.y);
           ctx.stroke();
+
+          // 루트 Lv.4 초월 각성: 주변 2체 동시 체인 레이저 타격 시각화
+          if (this.type === 'root' && this.level === 4) {
+            let chainCount = 0;
+            enemies.forEach(e2 => {
+              if (e2 !== this.beamTarget && chainCount < 2 && Math.hypot(e2.x - this.beamTarget.x, e2.y - this.beamTarget.y) <= 80) {
+                ctx.beginPath();
+                ctx.moveTo(this.beamTarget.x, this.beamTarget.y);
+                ctx.lineTo(e2.x, e2.y);
+                ctx.strokeStyle = "rgba(56, 189, 248, 0.85)";
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                chainCount++;
+              }
+            });
+          }
           ctx.restore();
         }
       }
