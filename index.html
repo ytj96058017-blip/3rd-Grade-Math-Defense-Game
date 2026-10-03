@@ -23,11 +23,12 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding: 10px; }
 
-    header { width: 100%; max-width: 920px; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--card-bg); border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 10px; }
+    header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--card-bg); border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); gap: 6px; overflow: hidden; }
     .title-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .title-group h1 { font-size: 1.08rem; color: var(--accent); letter-spacing: -0.5px; white-space: nowrap; }
-    .stats-group { display: flex; gap: 10px; font-size: 0.86rem; font-weight: 600; align-items: center; flex-shrink: 0; white-space: nowrap; }
-    .btn { background: var(--accent); color: #04101e; border: none; padding: 6px 11px; font-size: 0.82rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; flex-shrink: 0; }
+    .title-group h1 { font-size: 1.0rem; color: var(--accent); letter-spacing: -0.5px; white-space: nowrap; }
+    .stats-group { display: flex; gap: 6px; font-size: 0.78rem; font-weight: 600; align-items: center; flex-wrap: nowrap; overflow: hidden; }
+    .stat-badge { background: #0b1322; border: 1px solid #1e293b; padding: 3px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+    .btn { background: var(--accent); color: #04101e; border: none; padding: 5px 9px; font-size: 0.78rem; font-weight: 700; border-radius: 7px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 3px; white-space: nowrap; flex-shrink: 0; }
     .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
     .btn-secondary { background: var(--border); color: var(--text); }
     .btn-secondary:hover { background: #334769; }
@@ -111,15 +112,15 @@
   <header>
     <div class="title-group">
       <h1>🛡️ Math Defenders 3</h1>
-      <span id="display-user-info" style="font-size: 0.82rem; color: #94a3b8;">로그인 중...</span>
+      <span id="display-user-info" style="font-size: 0.76rem; color: #94a3b8; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">로그인 중...</span>
     </div>
     <div class="stats-group">
-      <div id="stat-gold-wrap" class="hidden">골드: <span id="val-gold" style="color:var(--gold);">300</span>G</div>
-      <div id="stat-wave-wrap" class="hidden">웨이브: <span id="val-wave" style="color:var(--accent);">1</span>/60</div>
-      <div id="stat-leaks-wrap" class="hidden">통과: <span id="val-leaks" style="color:var(--danger);">0</span>/3</div>
-      <div>★ <span id="val-stars" style="color:var(--gold);">0</span>/180</div>
+      <div id="stat-gold-wrap" class="stat-badge hidden"><span style="color:#94a3b8;">골드</span> <b id="val-gold" style="color:var(--gold);">300</b><span style="color:var(--gold); font-size:0.7rem;">G</span></div>
+      <div id="stat-wave-wrap" class="stat-badge hidden"><span style="color:#94a3b8;">W</span> <b id="val-wave" style="color:var(--accent);">1</b><span style="color:#64748b;">/60</span></div>
+      <div id="stat-leaks-wrap" class="stat-badge hidden"><span style="color:#94a3b8;">통과</span> <b id="val-leaks" style="color:var(--danger);">0</b><span style="color:#64748b;">/3</span></div>
+      <div class="stat-badge"><span style="color:var(--gold);">★</span> <b id="val-stars" style="color:var(--gold);">0</b><span style="color:#64748b;">/180</span></div>
       <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 랭킹</button>
-      <button class="btn" style="background:#0284c7; color:#fff;" onclick="openSynergyModal()">📖 상성 도감</button>
+      <button class="btn" style="background:#0284c7; color:#fff;" onclick="openSynergyModal()">📖 도감</button>
       <button class="btn btn-secondary hidden" id="btn-exit-wave" onclick="exitToLobby()">🚪 나가기</button>
       <button class="btn btn-danger hidden" id="btn-logout" onclick="handleLogout()">로그아웃</button>
     </div>
