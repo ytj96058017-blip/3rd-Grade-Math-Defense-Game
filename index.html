@@ -2768,15 +2768,10 @@
         let earnedStars = 1;
         if (leakCount === 0) earnedStars = 3;
         else if (leakCount === 1) earnedStars = 2;
-        e.draw();
-      }
 
-      if (waveActive && spawnFinished && enemies.length === 0) {
-        endWave(true);
-      }
-
-      requestAnimationFrame(gameLoop);
-    }
+        const prevStar = stageStars[currentWave] || 0;
+        const starGain = Math.max(0, earnedStars - prevStar);
+        stageStars[currentWave] = Math.max(prevStar, earnedStars);
 
         recalculateTotalStars();
         currentUser.score += earnedStars * 500;
