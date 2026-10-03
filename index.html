@@ -1585,6 +1585,85 @@
         this.hp = this.maxHp;
       }
 
+      // [트랙 고정 안전 장치] 몬스터가 트랙 경로에서 절대 벗어나지 않도록 보정
+      snapToCurrentSegment() {
+        const p1 = WAYPOINTS[this.wpIndex];
+        const p2 = WAYPOINTS[this.wpIndex + 1];
+        if (!p1 || !p2) return;
+
+        // 세그먼트가 수평(Horizontal)인 경우
+        if (p1.y === p2.y) {
+          this.y = p1.y;
+          const minX = Math.min(p1.x, p2.x);
+          const maxX = Math.max(p1.x, p2.x);
+          this.x = Math.max(minX, Math.min(maxX, this.x));
+        } 
+        // 세그먼트가 수직(Vertical)인 경우
+        else if (p1.x === p2.x) {
+          this.x = p1.x;
+          const minY = Math.min(p1.y, p2.y);
+          const maxY = Math.max(p1.y, p2.y);
+          this.y = Math.max(minY, Math.min(maxY, this.y));
+        }
+      }
+
+      // 트랙 경로를 따라 안전하게 뒤로 밀기 (넉백)
+      pushBackOnTrack(dist) {
+        let remaining = dist;
+        while (remaining > 0 && this.wpIndex >= 0) {
+          const currentWp = WAYPOINTS[this.wpIndex];
+          const distToPrev = Math.hypot(this.x - currentWp.x, this.y - currentWp.y);
+
+          if (remaining < distToPrev) {
+            const dirX = (currentWp.x - this.x) / (distToPrev || 1);
+            const dirY = (currentWp.y - this.y) / (distToPrev || 1);
+            this.x += dirX * remaining;
+            this.y += dirY * remaining;
+            remaining = 0;
+          } else {
+            this.x = currentWp.x;
+            this.y = currentWp.y;
+            remaining -= distToPrev;
+            if (this.wpIndex > 0) {
+              this.wpIndex--;
+            } else {
+              break;
+            }
+          }
+        }
+        this.snapToCurrentSegment();
+      }
+
+      // 트랙 경로를 따라 특정 지점(블랙홀 수렴점) 방향으로 끌어당김
+      pullAlongTrackTowards(targetX, targetY, power) {
+        // 목표점(블랙홀 폭발지점)과 가까운 웨이포인트 방향으로 트랙을 타고 이동
+        const p1 = WAYPOINTS[this.wpIndex];
+        const p2 = WAYPOINTS[this.wpIndex + 1];
+        if (!p1 || !p2) return;
+
+        const d1 = Math.hypot(p1.x - targetX, p1.y - targetY);
+        const d2 = Math.hypot(p2.x - targetX, p2.y - targetY);
+
+        if (d1 < d2) {
+          // p1 방향(역방향)으로 당김
+          this.pushBackOnTrack(power);
+        } else {
+          // p2 방향(정방향)으로 당김
+          const distToNext = Math.hypot(p2.x - this.x, p2.y - this.y);
+          if (distToNext <= power) {
+            this.x = p2.x;
+            this.y = p2.y;
+            if (this.wpIndex < WAYPOINTS.length - 2) this.wpIndex++;
+          } else {
+            const dirX = (p2.x - this.x) / distToNext;
+            const dirY = (p2.y - this.y) / distToNext;
+            this.x += dirX * power;
+            this.y += dirY * power;
+          }
+          this.snapToCurrentSegment();
+        }
+      }
+
       update() {
         this.animTick += 0.1;
         if (this.hitFlash > 0) this.hitFlash--;
@@ -1615,7 +1694,7 @@
         const dy = target.y - this.y;
         const dist = Math.hypot(dx, dy);
 
-        if (dist < this.speed) {
+        if (dist <= this.speed) {
           this.x = target.x;
           this.y = target.y;
           this.wpIndex++;
@@ -1623,6 +1702,9 @@
           this.x += (dx / dist) * this.speed;
           this.y += (dy / dist) * this.speed;
         }
+
+        // 트랙을 완벽하게 따라가도록 좌표 보정
+        this.snapToCurrentSegment();
 
         this.speed = Math.min(this.baseSpeed, this.speed + 0.004);
         return false;
@@ -1816,38 +1898,30 @@
           }
         }
 
-        // 6. 탄젠트(tan) 기울기 캐논 넉백 밸런스 정상화
+        // 6. 탄젠트(tan) 기울기 캐논: 트랙 경로 역방향 넉백 보정
         if (this.spec.knockback) {
-          // 보스는 넉백 100% 면역! 골렘은 75% 무게 저항!
           if (this.target.type === "boss") {
-            // 보스는 꿈쩍도 하지 않음
+            // 보스는 넉백 100% 면역
           } else if (this.target.kbImmuneTimer <= 0) {
             let kbDist = (this.spec.knockback * 0.7) * (1 + (this.towerLevel - 1) * 0.3);
-            if (this.target.type === "golem") kbDist *= 0.25; // 골렘은 무게 때문에 살짝만 밀림
+            if (this.target.type === "golem") kbDist *= 0.25;
             
-            // 현재 이동 방향의 반대(역방향)로 밀어냄
-            const currentWp = WAYPOINTS[this.target.wpIndex] || WAYPOINTS[0];
-            const nextWp = WAYPOINTS[this.target.wpIndex + 1] || currentWp;
-            const dirX = nextWp.x - currentWp.x;
-            const dirY = nextWp.y - currentWp.y;
-            const len = Math.hypot(dirX, dirY) || 1;
-            
-            this.target.x = Math.max(WAYPOINTS[0].x, this.target.x - (dirX / len) * kbDist);
-            this.target.y = this.target.y - (dirY / len) * kbDist;
+            // 트랙 경로를 거슬러 올라가도록 안전 넉백 호출
+            this.target.pushBackOnTrack(kbDist);
             this.target.speed = Math.max(0.25, this.target.speed * 0.6);
-            this.target.kbImmuneTimer = 70; // 약 1.2초간 넉백 면역 부여 (무한 넉백 꼼수 차단)
+            this.target.kbImmuneTimer = 70;
           }
         }
 
-        // lim 블랙홀
+        // lim 블랙홀: 트랙 경로를 따라 수렴점으로 빨아들임
         if (this.spec.vortex) {
           const vortexRadius = 90 + this.towerLevel * 25;
           enemies.forEach(e => {
             const d = Math.hypot(e.x - this.x, e.y - this.y);
             if (d <= vortexRadius && d > 5) {
-              const pullPower = (e.type === "boss" ? 6 : (e.type === "golem" ? 10 : (this.towerLevel === 4 ? 22 : 15)));
-              e.x += ((this.x - e.x) / d) * pullPower;
-              e.y += ((this.y - e.y) / d) * pullPower;
+              const pullPower = (e.type === "boss" ? 4 : (e.type === "golem" ? 7 : (this.towerLevel === 4 ? 14 : 9)));
+              // 2D 자유 공간이 아니라 트랙 경로를 따라 안전하게 당김
+              e.pullAlongTrackTowards(this.x, this.y, pullPower);
               e.speed = Math.max(0.2, e.speed * 0.4);
               e.hp -= dmg * (this.towerLevel === 4 ? 0.6 : 0.45);
             }
