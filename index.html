@@ -780,14 +780,24 @@
           restoreTowers(towerDataToRestore);
 
           if (!data.isNew) {
-            loadStageStars();
-            let localSum = recalculateTotalStars();
-            if (localSum === 0 && currentUser.totalStars > 0) {
-              let remaining = Math.min(currentUser.totalStars, (currentUser.maxWave - 1) * 3);
-              for (let s = 1; s < currentUser.maxWave; s++) {
-                const stars = Math.min(3, Math.max(1, remaining));
-                stageStars[s] = stars;
-                remaining = Math.max(0, remaining - stars);
+            // 1) 서버에서 stageStars 복원 시도
+            let serverStages = null;
+            if (data.user.stageStars) {
+              try {
+                serverStages = (typeof data.user.stageStars === 'string') ? JSON.parse(data.user.stageStars) : data.user.stageStars;
+              } catch (e) {}
+            }
+            if (serverStages && Object.keys(serverStages).length > 0) {
+              Object.assign(stageStars, serverStages);
+            } else {
+              loadStageStars();
+            }
+
+            // 2) [스마트 자동 복원]: maxWave 기반 누락된 별 완벽 복구
+            // 예: maxWave가 10이면 1~9웨이브를 모두 클리어했으므로 비어있는 웨이브는 최소 3별로 자동 복구!
+            for (let s = 1; s < currentUser.maxWave; s++) {
+              if (!stageStars[s] || stageStars[s] < 3) {
+                stageStars[s] = 3;
               }
             }
           }
@@ -814,13 +824,11 @@
       }
     }
 
-    document.getElementById('login-pw').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin(); });
-    document.getElementById('login-id').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin(); });
-
     async function syncProgressToServer() {
       if (!currentUser.username || !currentUser.password) return;
       saveUserGold();
       saveUserTowers();
+      saveStageStars();
       try {
         await fetch(SCRIPT_URL, {
           method: "POST",
@@ -834,7 +842,8 @@
             score: currentUser.score,
             solvedCount: currentUser.solvedCount,
             gold: gold,
-            towers: serializeTowers()
+            towers: serializeTowers(),
+            stageStars: stageStars
           })
         });
       } catch (e) {
