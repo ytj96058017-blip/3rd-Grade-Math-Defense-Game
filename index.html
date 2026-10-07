@@ -774,7 +774,7 @@
       }
     }
 
-    async function handleLogin() {
+ async function handleLogin() {
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-pw').value.trim();
       const cls = document.getElementById('login-class').value;
@@ -793,6 +793,7 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             action: "login",
+            token: "DEFENDER_SECURE_2026_TOKEN_KEY", // 보안 토큰 추가
             username: id,
             className: cls,
             password: pw
@@ -849,7 +850,6 @@
               loadStageStars();
             }
 
-            // [자동 복원] 최고 웨이브 이전 단계의 누락 별점 완벽 3성 복구
             for (let s = 1; s < currentUser.maxWave; s++) {
               if (!stageStars[s] || stageStars[s] < 3) {
                 stageStars[s] = 3;
@@ -879,7 +879,7 @@
       }
     }
 
-    async function syncProgressToServer() {
+   async function syncProgressToServer() {
       if (!currentUser.username || !currentUser.password) return;
       saveUserGold();
       saveUserTowers();
@@ -890,6 +890,7 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             action: "syncProgress",
+            token: "DEFENDER_SECURE_2026_TOKEN_KEY", // 보안 토큰 추가
             username: currentUser.username,
             password: currentUser.password,
             totalStars: currentUser.totalStars,
@@ -3008,6 +3009,23 @@
     window.onload = function() {
       requestAnimationFrame(gameLoop);
     };
+
+// --- 학생들의 단순 조작 방지 (F12 및 마우스 우클릭 차단) ---
+    window.addEventListener('keydown', (e) => {
+      if (
+        e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+        (e.ctrlKey && (e.key === 'u' || e.key === 'U'))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    window.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+
   </script>
 </body>
 </html>
