@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Math Defenders 3 : 중3 수학 디펜스 (Awakening & Endless Edition)</title>
+  
+  <!-- KaTeX 수식 렌더러 CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
   <style>
     :root {
       --bg: #090e17;
@@ -121,6 +126,9 @@
       <div class="stat-badge"><span style="color:var(--gold);">★</span> <b id="val-stars" style="color:var(--gold);">0</b><span style="color:#64748b;">/180</span></div>
       <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 랭킹</button>
       <button class="btn" style="background:#0284c7; color:#fff;" onclick="openSynergyModal()">📖 도감</button>
+      <button class="btn" style="background:#831843; color:#fff; border:1px solid #f43f5e;" onclick="openGrimoireModal()">
+        📓 오답 (<span id="header-wrong-count" style="font-weight:bold; color:var(--gold);">0</span>)
+      </button>
       <button class="btn btn-secondary hidden" id="btn-exit-wave" onclick="exitToLobby()">🚪 나가기</button>
       <button class="btn btn-danger hidden" id="btn-logout" onclick="handleLogout()">로그아웃</button>
     </div>
@@ -324,11 +332,26 @@
     <div class="modal-card">
       <h2 style="color:var(--danger);">❌ 오답입니다!</h2>
       <div id="explain-content" style="text-align: left; font-size: 0.88rem; line-height: 1.5; margin: 12px 0; background: #080d17; padding: 12px; border-radius: 8px;"></div>
-      <button class="btn" onclick="closeExplainModal()">확인 & 다음 문제</button>
+      <button class="btn" id="btn-close-explain" onclick="closeExplainModal()">확인 & 다음 문제</button>
+    </div>
+  </div>
+
+ <!-- [모달: 오답 복습 서재] -->
+  <div class="modal-overlay hidden" id="modal-grimoire">
+    <div class="modal-card" style="max-width: 620px; text-align: left; padding: 18px 22px;">
+      <h2 style="color:var(--danger); text-align: center; margin-bottom: 4px; font-size: 1.2rem;">📓 마도 오답 복습 서재</h2>
+      <p style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-bottom: 12px;">퀴즈에서 틀렸던 취약 문제들을 다시 읽고 완벽하게 정복하세요.</p>
+      
+      <div id="grimoire-list-box" style="max-height: 380px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 8px;">
+        <!-- 오답 카드들이 동적으로 들어가는 곳 -->
+      </div>
+
+      <button class="btn btn-secondary" style="width:100%; margin-top:12px;" onclick="closeGrimoireModal()">서재 닫기</button>
     </div>
   </div>
 
   <div class="modal-overlay hidden" id="modal-synergy">
+
     <div class="modal-card" style="max-width: 600px; text-align: left; padding: 18px 22px;">
       <h2 style="color:var(--accent); text-align: center; margin-bottom: 4px; font-size: 1.2rem;">📖 몬스터 정보 & 포탑 상성 도감</h2>
       <p style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-bottom: 12px;">게임 화면 속 몬스터의 실제 모양과 출현 시기, 카운터 포탑을 확인하세요.</p>
@@ -621,7 +644,7 @@
       white: "#ffffff"
     };
 
-    let currentUser = {
+   let currentUser = {
       username: "",
       className: "",
       password: "",
@@ -632,6 +655,35 @@
       endlessWave: 0,
       endlessScore: 0
     };
+
+    let userGrimoire = [];
+
+    function saveUserGrimoire() {
+      if (currentUser.username) {
+        localStorage.setItem(`md3_grimoire_${currentUser.username}`, JSON.stringify(userGrimoire));
+      }
+      updateGrimoireBadge();
+    }
+
+    function loadUserGrimoire() {
+      if (!currentUser.username) return;
+      const saved = localStorage.getItem(`md3_grimoire_${currentUser.username}`);
+      if (saved) {
+        try {
+          userGrimoire = JSON.parse(saved);
+        } catch (e) {
+          userGrimoire = [];
+        }
+      } else {
+        userGrimoire = [];
+      }
+      updateGrimoireBadge();
+    }
+
+    function updateGrimoireBadge() {
+      const badge = document.getElementById('header-wrong-count');
+      if (badge) badge.innerText = userGrimoire.length;
+    }
 
     const TOTAL_STAGES = 60;
     const stageStars = {};
@@ -846,9 +898,10 @@
             }
             if (serverStages && Object.keys(serverStages).length > 0) {
               Object.assign(stageStars, serverStages);
-            } else {
+           } else {
               loadStageStars();
             }
+            loadUserGrimoire();
 
             for (let s = 1; s < currentUser.maxWave; s++) {
               if (!stageStars[s] || stageStars[s] < 3) {
@@ -913,9 +966,11 @@
       syncProgressToServer();
     });
 
-    function handleLogout() {
+   function handleLogout() {
       clearAllTowers();
       currentUser = { username: "", className: "", password: "", totalStars: 0, maxWave: 1, score: 0, solvedCount: 0, endlessWave: 0, endlessScore: 0 };
+      userGrimoire = [];
+      updateGrimoireBadge();
       document.getElementById('modal-login').classList.remove('hidden');
       document.getElementById('stage-select-view').classList.add('hidden');
       document.getElementById('game-play-view').classList.add('hidden');
@@ -1268,64 +1323,169 @@
         const gen = this.generators[pickedIndex];
         const item = gen();
         const choices = [item.correct, ...item.wrong].sort(() => Math.random() - 0.5);
-        return { category: item.category, q: item.q, choices, ans: item.correct, explain: item.explain };
+
+        // 기본 텍스트 수식(√, ², π 등)을 KaTeX 수식($...$)으로 부드럽게 감싸주는 포맷팅
+        const formatMath = (str) => {
+          if (!str || typeof str !== 'string') return str;
+          if (str.includes('$')) return str;
+          // 제곱근(√)이나 제곱(²), 거듭제곱 등이 들어간 단어를 수식으로 변환
+          return str.replace(/([√\d\+\-\*\/xya-z\(\)\^²°π÷]+(?:\s*[\+\-\×\÷\=]\s*[√\d\+\-\*\/xya-z\(\)\^²°π÷]+)*)/gi, (match) => {
+            if (match.length <= 1 && !/[√²°]/.test(match)) return match;
+            let latex = match
+              .replace(/√(\d+|[a-z]+)/g, '\\sqrt{$1}')
+              .replace(/²/g, '^2')
+              .replace(/°/g, '^\\circ')
+              .replace(/×/g, '\\times ')
+              .replace(/÷/g, '\\div ');
+            return `$${latex}$`;
+          });
+        };
+
+        return { 
+          category: item.category, 
+          q: formatMath(item.q), 
+          choices: choices.map(c => formatMath(c)), 
+          ans: formatMath(item.correct), 
+          explain: formatMath(item.explain) 
+        };
       }
     };
+
+    function renderFormulaInto(el, text) {
+      if (!window.katex) { el.textContent = text; return; }
+      const parts = String(text).split("$");
+      el.innerHTML = "";
+      parts.forEach((part, idx) => {
+        if (idx % 2 === 1) {
+          const span = document.createElement("span");
+          try { window.katex.render(part, span, { throwOnError: false }); } catch (e) { span.textContent = part; }
+          el.appendChild(span);
+        } else {
+          const span = document.createElement("span");
+          span.innerHTML = part.replace(/\n/g, "<br>");
+          el.appendChild(span);
+        }
+      });
+    }
 
     let currentQuiz = null;
     let quizLeft = 3;
 
-    function generateNextQuiz() {
+   function generateNextQuiz() {
+      const qTextEl = document.getElementById('question-text');
+      const choicesBox = document.getElementById('choices-container');
+
       if (quizLeft <= 0) {
-        document.getElementById('question-text').innerText = "이번 웨이브 준비 퀴즈를 완료했습니다! 기지를 강화하고 출격하세요.";
-        document.getElementById('choices-container').innerHTML = "";
+        qTextEl.innerText = "이번 웨이브 준비 퀴즈를 완료했습니다! 기지를 강화하고 출격하세요.";
+        choicesBox.innerHTML = "";
         return;
       }
       currentQuiz = QuestionEngine.getRandomQuiz();
       document.getElementById('quiz-cat').innerText = currentQuiz.category;
-      document.getElementById('question-text').innerText = `Q. ${currentQuiz.q}`;
-      const choicesBox = document.getElementById('choices-container');
+      
+      // 문제 본문 KaTeX 렌더링
+      renderFormulaInto(qTextEl, `Q. ${currentQuiz.q}`);
       choicesBox.innerHTML = "";
 
       currentQuiz.choices.forEach((c) => {
         const btn = document.createElement('button');
         btn.className = "choice-btn";
-        btn.innerText = c;
+        // 보기 버튼 KaTeX 렌더링
+        renderFormulaInto(btn, c);
         btn.onclick = () => submitAnswer(c);
         choicesBox.appendChild(btn);
       });
       document.getElementById('val-quiz-left').innerText = quizLeft;
     }
 
+    let quizCorrectInWave = 0;
+
     function submitAnswer(chosen) {
       if (chosen === currentQuiz.ans) {
         gold += 100;
+        quizCorrectInWave++;
         saveUserGold();
         currentUser.score += 100;
         currentUser.solvedCount += 1;
         showToast("🎉 정답입니다! +100G 획득", "var(--success)");
         syncProgressToServer();
-      } else {
+     } else {
+        // 오답 노트에 자동 등록 (중복 방지)
+        const exists = userGrimoire.some(item => item.q === currentQuiz.q);
+        if (!exists) {
+          userGrimoire.unshift({
+            id: "w_" + Date.now(),
+            category: currentQuiz.category,
+            q: currentQuiz.q,
+            ans: currentQuiz.ans,
+            explain: currentQuiz.explain,
+            date: new Date().toLocaleDateString()
+          });
+          saveUserGrimoire();
+        }
         showExplainModal(currentQuiz.q, chosen, currentQuiz.ans, currentQuiz.explain);
       }
       quizLeft--;
       updateUI();
+
+      // 이번 웨이브 3문제를 모두 풀었을 때 3문제 다 맞혔다면 퍼펙트 보너스 지급
+      if (quizLeft <= 0 && quizCorrectInWave === 3) {
+        gold += 50;
+        saveUserGold();
+        currentUser.score += 100;
+        setTimeout(() => {
+          showToast("⭐ 3문제 연속 정답! 퍼펙트 보너스 +50G!", "var(--gold)");
+        }, 600);
+      }
+
       generateNextQuiz();
     }
+
+    let explainTimer = null;
 
     function showExplainModal(q, userAns, ans, exp) {
       const box = document.getElementById('explain-content');
       box.innerHTML = `
-        <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:4px;">문제: ${q}</div>
-        <div style="color:var(--danger); margin-bottom:4px;">내가 고른 답: <b>${userAns}</b></div>
-        <div style="color:var(--success); margin-bottom:10px;">올바른 정답: <b>${ans}</b></div>
+        <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:4px;" id="exp-q"></div>
+        <div style="color:var(--danger); margin-bottom:4px;" id="exp-user"></div>
+        <div style="color:var(--success); margin-bottom:10px;" id="exp-ans"></div>
         <div style="color:var(--accent); font-weight:bold; margin-top:8px;">💡 개념 콕 해설:</div>
-        <div style="color:#e2e8f0; margin-top:4px;">${exp}</div>
+        <div style="color:#e2e8f0; margin-top:4px;" id="exp-desc"></div>
       `;
+
+      renderFormulaInto(document.getElementById('exp-q'), `문제: ${q}`);
+      renderFormulaInto(document.getElementById('exp-user'), `내가 고른 답: ${userAns}`);
+      renderFormulaInto(document.getElementById('exp-ans'), `올바른 정답: ${ans}`);
+      renderFormulaInto(document.getElementById('exp-desc'), exp);
+      
+      const btn = document.getElementById('btn-close-explain');
+      let remain = 5;
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+      btn.innerText = `풀이 정독 중 (${remain}초)`;
+
+      if (explainTimer) clearInterval(explainTimer);
+      explainTimer = setInterval(() => {
+        remain--;
+        if (remain > 0) {
+          btn.innerText = `풀이 정독 중 (${remain}초)`;
+        } else {
+          clearInterval(explainTimer);
+          explainTimer = null;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          btn.innerText = "이해했습니다 & 다음 문제";
+        }
+      }, 1000);
+
       document.getElementById('modal-explain').classList.remove('hidden');
     }
 
     function closeExplainModal() {
+      if (explainTimer) {
+        clearInterval(explainTimer);
+        explainTimer = null;
+      }
       document.getElementById('modal-explain').classList.add('hidden');
     }
 
@@ -2001,13 +2161,9 @@
         this.dischargeAnim = 0; // 테슬라 방전 링 애니메이션
       }
 
-      get effectiveRange() {
+     get effectiveRange() {
         const bonus = (this.type === 'circle' && this.level === 4) ? 0.35 : 0.15;
         return this.spec.range * (1 + (this.level - 1) * bonus);
-      }
-
-      get effectiveRange() {
-        return this.spec.range * (1 + (this.level - 1) * 0.15);
       }
 
       get effectiveDamage() {
@@ -2816,6 +2972,7 @@
     function prepareNextWave() {
       document.getElementById('btn-start-wave').disabled = false;
       quizLeft = 3;
+      quizCorrectInWave = 0;
       generateNextQuiz();
       updateGimmickBanner();
       updateUI();
@@ -3004,6 +3161,63 @@
     function exitToLobbyFromModal() {
       document.getElementById('modal-result').classList.add('hidden');
       exitToLobby();
+    }
+
+    function openGrimoireModal() {
+      const modal = document.getElementById('modal-grimoire');
+      const box = document.getElementById('grimoire-list-box');
+      box.innerHTML = "";
+
+      if (userGrimoire.length === 0) {
+        box.innerHTML = `
+          <div style="text-align:center; padding:35px 20px; color:#94a3b8;">
+            <div style="font-size:2.2rem; margin-bottom:8px;">✨</div>
+            <div style="font-weight:bold; font-size:0.95rem; color:#f1f5f9;">보관된 취약 오답이 없습니다!</div>
+            <div style="font-size:0.78rem; margin-top:4px;">모든 수학 개념을 완벽하게 이해하고 방어하셨습니다.</div>
+          </div>
+        `;
+      } else {
+        userGrimoire.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.style.background = "#080d17";
+          card.style.border = "1px solid var(--border)";
+          card.style.borderRadius = "8px";
+          card.style.padding = "10px 12px";
+          card.style.display = "flex";
+          card.style.flexDirection = "column";
+          card.style.gap = "4px";
+
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:4px;">
+              <span style="font-size:0.7rem; color:var(--accent); font-weight:bold;">[${item.category}]</span>
+              <button class="btn btn-secondary" style="padding:2px 7px; font-size:0.68rem; color:var(--success); border-color:#14532d;" onclick="removeGrimoireItem('${item.id}')">
+                ✓ 정복 완료
+              </button>
+            </div>
+            <div id="g-q-${idx}" style="font-size:0.82rem; font-weight:bold; color:#f1f5f9; margin-top:2px;"></div>
+            <div id="g-ans-${idx}" style="font-size:0.78rem; color:var(--gold); font-weight:bold;"></div>
+            <div id="g-exp-${idx}" style="font-size:0.74rem; color:#cbd5e1; background:#0f172a; padding:6px 8px; border-radius:6px; margin-top:3px; line-height:1.4;"></div>
+          `;
+          box.appendChild(card);
+
+          renderFormulaInto(document.getElementById(`g-q-${idx}`), `문제: ${item.q}`);
+          renderFormulaInto(document.getElementById(`g-ans-${idx}`), `정답: ${item.ans}`);
+          renderFormulaInto(document.getElementById(`g-exp-${idx}`), `💡 해설: ${item.explain}`);
+        });
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeGrimoireModal() {
+      document.getElementById('modal-grimoire').classList.add('hidden');
+    }
+
+    function removeGrimoireItem(id) {
+      userGrimoire = userGrimoire.filter(item => item.id !== id);
+      saveUserGrimoire();
+      openGrimoireModal();
+      showToast("✨ 오답 문제를 정복 완료하여 서재에서 정리했습니다!", "var(--success)");
     }
 
     window.onload = function() {
