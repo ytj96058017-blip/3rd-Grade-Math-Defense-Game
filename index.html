@@ -571,10 +571,11 @@
       <h2 id="result-title">웨이브 클리어!</h2>
       <div id="result-stars" style="font-size: 2rem; color: var(--gold); margin: 8px 0;">★★★</div>
       <p id="result-desc" style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 16px; white-space: pre-line;"></p>
-      <div style="display:flex; gap:10px; justify-content:center;">
-        <button class="btn btn-secondary" onclick="exitToLobbyFromModal()">로비로 이동</button>
+    <div style="display:flex; gap:10px; justify-content:center;">
+        <button class="btn btn-secondary" id="btn-result-lobby" onclick="exitToLobbyFromModal()">로비로 이동</button>
         <button class="btn" id="btn-next-action">다음</button>
-      </div>
+      </div>  
+
     </div>
   </div>
 
@@ -2891,10 +2892,11 @@
       enemies = [];
       projectiles = [];
 
-      const modal = document.getElementById('modal-result');
+     const modal = document.getElementById('modal-result');
       const title = document.getElementById('result-title');
       const stars = document.getElementById('result-stars');
       const desc = document.getElementById('result-desc');
+      const lobbyBtn = document.getElementById('btn-result-lobby');
       const nextBtn = document.getElementById('btn-next-action');
 
       modal.classList.remove('hidden');
@@ -2909,6 +2911,8 @@
           title.innerText = `👑 무한 웨이브 ${currentWave} 정복!`;
           stars.innerText = "👑👑👑";
           desc.innerText = `한계 돌파 중! 축하합니다!\n현재 무한 점수: ${currentUser.endlessScore.toLocaleString()}점\n(보유 골드: ${gold}G로 다음 무한 웨이브를 대비하세요)`;
+          lobbyBtn.className = "btn btn-secondary";
+          nextBtn.classList.remove('hidden');
           nextBtn.innerText = "다음 무한 웨이브 출격";
           nextBtn.onclick = () => {
             modal.classList.add('hidden');
@@ -2934,24 +2938,20 @@
 
         title.innerText = `웨이브 ${currentWave} 방어 성공!`;
         stars.innerText = "★".repeat(earnedStars) + "☆".repeat(3 - earnedStars);
-        desc.innerText = `완벽한 수학적 기지 배치였습니다!\n\n성벽 통과 몬스터: ${leakCount}마리\n획득 별점: ${earnedStars}개${starGain > 0 ? ` (누적 별 +${starGain}개 갱신!)` : ' (최고 기록 유지)'}\n현재 보유 골드: ${gold}G (퀴즈를 풀어 포탑을 강화하세요!)`;
-        nextBtn.innerText = "다음 웨이브 준비";
-        nextBtn.onclick = () => {
-          modal.classList.add('hidden');
-          currentWave++;
-          prepareNextWave();
-        };
+        desc.innerText = `완벽한 수학적 기지 배치였습니다!\n\n성벽 통과 몬스터: ${leakCount}마리\n획득 별점: ${earnedStars}개${starGain > 0 ? ` (누적 별 +${starGain}개 갱신!)` : ' (최고 기록 유지)'}\n현재 보유 골드: ${gold}G`;
+        
+        // 일반 웨이브 클리어 시 [로비로 이동] 버튼만 단독 표시
+        lobbyBtn.className = "btn";
+        lobbyBtn.style.minWidth = "140px";
+        nextBtn.classList.add('hidden');
         syncProgressToServer();
       } else {
         if (isEndless) {
           title.innerText = `👑 무한 모드 종료!`;
           stars.innerText = "☆☆☆";
           desc.innerText = `최종 도달: 무한 웨이브 ${currentWave}\n기록된 무한 점수: ${currentUser.endlessScore.toLocaleString()}점!\n명예의 전당 무한 랭킹에 기록되었습니다.`;
-          nextBtn.innerText = "로비로 이동";
-          nextBtn.onclick = () => {
-            modal.classList.add('hidden');
-            exitToLobby();
-          };
+          lobbyBtn.className = "btn";
+          nextBtn.classList.add('hidden');
           syncProgressToServer();
           updateUI();
           return;
@@ -2960,6 +2960,9 @@
         title.innerText = `웨이브 ${currentWave} 방어 실패!`;
         stars.innerText = "☆☆☆";
         desc.innerText = `몬스터 3마리가 성벽을 통과했습니다!\n상단 [📖 상성 도감]을 확인하고 퀴즈로 골드를 모아 재도전하세요.\n(현재 잔여 골드: ${gold}G)`;
+        lobbyBtn.className = "btn btn-secondary";
+        lobbyBtn.style.minWidth = "";
+        nextBtn.classList.remove('hidden');
         nextBtn.innerText = "웨이브 재도전";
         nextBtn.onclick = () => {
           modal.classList.add('hidden');
@@ -2969,12 +2972,13 @@
       updateUI();
     }
 
-    function prepareNextWave() {
+   function prepareNextWave() {
       document.getElementById('btn-start-wave').disabled = false;
       quizLeft = 3;
       quizCorrectInWave = 0;
       generateNextQuiz();
       updateGimmickBanner();
+      updateTowerUnlockUI();
       updateUI();
     }
 
