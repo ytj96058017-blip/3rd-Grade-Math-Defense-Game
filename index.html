@@ -649,7 +649,9 @@
       username: "",
       className: "",
       password: "",
+      sessionTicket: "",
       totalStars: 0,
+
       maxWave: 1,
       score: 0,
       solvedCount: 0,
@@ -860,6 +862,7 @@
           const rawClass = String(data.user.className || cls);
           currentUser.className = (rawClass.includes('T') || rawClass.includes('-0')) ? cls : rawClass;
           currentUser.password = pw;
+          currentUser.sessionTicket = data.sessionTicket || "";
           currentUser.totalStars = Number(data.user.totalStars) || 0;
           currentUser.maxWave = Math.max(1, Number(data.user.maxWave) || 1);
           currentUser.score = Number(data.user.score) || 0;
@@ -945,6 +948,7 @@
           body: JSON.stringify({
             action: "syncProgress",
             token: "DEFENDER_SECURE_2026_TOKEN_KEY", // 보안 토큰 추가
+            sessionTicket: currentUser.sessionTicket || "",
             username: currentUser.username,
             password: currentUser.password,
             totalStars: currentUser.totalStars,
@@ -969,7 +973,7 @@
 
    function handleLogout() {
       clearAllTowers();
-      currentUser = { username: "", className: "", password: "", totalStars: 0, maxWave: 1, score: 0, solvedCount: 0, endlessWave: 0, endlessScore: 0 };
+      currentUser = { username: "", className: "", password: "", sessionTicket: "", totalStars: 0, maxWave: 1, score: 0, solvedCount: 0, endlessWave: 0, endlessScore: 0 };
       userGrimoire = [];
       updateGrimoireBadge();
       document.getElementById('modal-login').classList.remove('hidden');
